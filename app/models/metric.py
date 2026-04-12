@@ -44,6 +44,12 @@ class MetricSnapshot(Base):
     # System uptime
     uptime_seconds = Column(Integer, nullable=True)
 
+    # Extended metrics
+    disk_read_bytes = Column(Float, nullable=True)  # Disk read bytes
+    disk_write_bytes = Column(Float, nullable=True)  # Disk write bytes
+    process_count = Column(Integer, nullable=True)  # Total process count
+    active_connections = Column(Integer, nullable=True)  # Active network connections
+
     # Additional data for flexibility
     extra_data = Column(JSON, default=dict, nullable=False)
 
