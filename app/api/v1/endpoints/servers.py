@@ -35,14 +35,41 @@ async def list_servers(
     limit: int = Query(100, ge=1, le=1000),
     environment: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    tags: Optional[str] = Query(None, description="Filter by tag"),
+    sort_by: str = Query(
+        "created_at",
+        description="Sort by field: created_at, name, cpu_usage, memory_usage, last_seen",
+    ),
+    sort_order: str = Query("desc", description="Sort order: asc, desc"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Get list of servers with optional filters.
+    Get list of servers with optional filters and sorting.
     """
+    # Validate sort parameters
+    valid_sort_fields = ["created_at", "name", "cpu_usage", "memory_usage", "last_seen"]
+    if sort_by not in valid_sort_fields:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid sort field. Valid fields: {valid_sort_fields}",
+        )
+
+    if sort_order not in ["asc", "desc"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid sort order. Use 'asc' or 'desc'",
+        )
+
     servers = await ServerService.get_servers(
-        db, skip=skip, limit=limit, environment=environment, status=status
+        db,
+        skip=skip,
+        limit=limit,
+        environment=environment,
+        status=status,
+        tags=tags,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
     return success_response(
         data=[ServerResponse.model_validate(s).model_dump() for s in servers],

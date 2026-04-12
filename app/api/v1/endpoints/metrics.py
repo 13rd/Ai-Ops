@@ -1,13 +1,24 @@
+from datetime import datetime
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
 from app.db.base import get_db
+from app.models.historical_metric import AggregationType, MetricType
 from app.models.user import User
 from app.schemas.container import ContainerSnapshotResponse
+from app.schemas.historical_metric import (
+    HistoricalMetricsRequest,
+    HistoricalMetricsResponse,
+    HistoricalMetricResponse,
+    MetricsAggregationLevelResponse,
+)
 from app.schemas.metric import MetricSnapshotResponse
 from app.schemas.response import success_response
 from app.services.collectors.snapshot_service import ContainerService, MetricService
+from app.services.metrics.historical_service import HistoricalMetricService
 from app.services.servers.server_service import ServerService
 
 router = APIRouter()
@@ -65,6 +76,111 @@ async def get_metrics_history(
     return success_response(
         data=[MetricSnapshotResponse.model_validate(m).model_dump() for m in metrics],
         message="Metrics history retrieved successfully",
+    )
+
+
+@router.get("/{server_id}/metrics/historical/{metric_type}", response_model=dict)
+async def get_historical_metrics(
+    server_id: int,
+    metric_type: str,  # This will be validated in the function
+    time_range: str = Query(..., description="Time range: 1h, 24h, 7d, 30d"),
+    aggregation_level: str = Query("minute", description="Aggregation level: minute, hour, day"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get historical metrics for a server and metric type within a time range.
+    """
+    server = await ServerService.get_server_by_id(db, server_id)
+    if not server:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Server not found",
+        )
+
+    # Validate metric_type
+    try:
+        validated_metric_type = MetricType(metric_type)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400,
+            detail=f"Invalid metric type. Valid types: {[e.value for e in MetricType]}",
+        )
+
+    # Validate time_range
+    from app.services.metrics.historical_service import TimeRange
+
+    try:
+        validated_time_range = TimeRange(time_range)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400,
+            detail=f"Invalid time range. Valid ranges: {[e.value for e in TimeRange]}",
+        )
+
+    # Validate aggregation_level
+    try:
+        validated_aggregation_level = AggregationType(aggregation_level)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400,
+            detail=f"Invalid aggregation level. Valid levels: {[e.value for e in AggregationType]}",
+        )
+
+    # Get historical metrics
+    metrics = await HistoricalMetricService.get_historical_metrics(
+        db, server_id, validated_metric_type, validated_time_range, validated_aggregation_level
+    )
+
+    return success_response(
+        data={
+            "server_id": server_id,
+            "metric_type": validated_metric_type.value,
+            "time_range": validated_time_range.value,
+            "aggregation_level": validated_aggregation_level.value,
+            "metrics": [HistoricalMetricResponse.model_validate(m).model_dump() for m in metrics],
+        },
+        message="Historical metrics retrieved successfully",
+    )
+
+
+@router.get("/{server_id}/metrics/available-aggregations", response_model=dict)
+async def get_available_aggregation_levels(
+    server_id: int,
+    metric_type: str = Query(..., description="Metric type to check"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get available aggregation levels for a specific metric type on a server.
+    """
+    server = await ServerService.get_server_by_id(db, server_id)
+    if not server:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Server not found",
+        )
+
+    # Validate metric_type
+    try:
+        validated_metric_type = MetricType(metric_type)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400,
+            detail=f"Invalid metric type. Valid types: {[e.value for e in MetricType]}",
+        )
+
+    # Get available aggregation levels
+    levels = await HistoricalMetricService.get_available_aggregation_levels(
+        db, server_id, validated_metric_type
+    )
+
+    return success_response(
+        data={
+            "metric_type": validated_metric_type.value,
+            "available_levels": [level.value for level in levels],
+        },
+        message="Available aggregation levels retrieved successfully",
     )
 
 
