@@ -20,6 +20,10 @@ class MetricSnapshotBase(BaseModel):
     network_in_bytes: Optional[float] = None
     network_out_bytes: Optional[float] = None
     uptime_seconds: Optional[int] = None
+    disk_read_bytes: Optional[float] = None
+    disk_write_bytes: Optional[float] = None
+    process_count: Optional[int] = None
+    active_connections: Optional[int] = None
 
 
 class MetricSnapshotResponse(MetricSnapshotBase):
