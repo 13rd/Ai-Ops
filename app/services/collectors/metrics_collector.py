@@ -95,6 +95,26 @@ class MetricsCollector:
             if uptime is not None:
                 metrics.uptime_seconds = uptime
 
+            # Disk I/O
+            disk_io = MetricsCollector._get_disk_io_info(client)
+            if disk_io:
+                metrics.disk_read_bytes = disk_io.get("read_bytes")
+                metrics.disk_write_bytes = disk_io.get("written_bytes")
+
+            # Process count
+            process_info = MetricsCollector._get_process_info(client)
+            if process_info:
+                metrics.process_count = process_info.get("total")
+
+            # Active network connections
+            try:
+                netstat_output = MetricsCollector._execute_command(
+                    client, "netstat -an | grep ESTABLISHED | wc -l"
+                )
+                metrics.active_connections = int(netstat_output)
+            except Exception as e:
+                logger.warning(f"Failed to get active connections: {e}")
+
         except Exception as e:
             logger.error(f"Error collecting specific metrics: {e}")
 
@@ -193,22 +213,121 @@ class MetricsCollector:
         Get network bytes in/out.
         """
         try:
+            # Get network interfaces stats
             output = MetricsCollector._execute_command(
-                client, "cat /proc/net/dev | grep -E 'eth0|ens|enp' | head -1"
+                client, "cat /proc/net/dev | grep -E 'eth[0-9]|ens[0-9]+|enp[0-9]+s[0-9]+'"
             )
             if not output:
-                return None
+                # Try to get at least some interface if specific patterns don't match
+                output = MetricsCollector._execute_command(
+                    client, "cat /proc/net/dev | grep -v -E 'Inter|face'"
+                )
 
-            parts = output.split()
-            bytes_in = float(parts[1])
-            bytes_out = float(parts[9])
+            lines = output.strip().split("\n")
+            total_in = 0
+            total_out = 0
 
-            return {
-                "in": bytes_in,
-                "out": bytes_out,
-            }
+            for line in lines:
+                if line.strip():
+                    parts = line.split()
+                    if len(parts) >= 10:
+                        try:
+                            bytes_in = float(parts[1])  # RX bytes
+                            bytes_out = float(parts[9])  # TX bytes
+                            total_in += bytes_in
+                            total_out += bytes_out
+                        except (ValueError, IndexError):
+                            continue
+
+            if total_in > 0 or total_out > 0:
+                return {
+                    "in": total_in,
+                    "out": total_out,
+                }
+
+            return None
         except Exception as e:
             logger.warning(f"Failed to get network info: {e}")
+            return None
+
+    @staticmethod
+    def _get_disk_io_info(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
+        """
+        Get disk I/O statistics.
+        """
+        try:
+            output = MetricsCollector._execute_command(client, "cat /proc/diskstats")
+            lines = output.strip().split("\n")
+
+            total_reads = 0
+            total_writes = 0
+            total_read_bytes = 0
+            total_written_bytes = 0
+
+            for line in lines:
+                parts = line.split()
+                if len(parts) >= 14:
+                    try:
+                        # Skip RAM disks and partitions
+                        device_name = parts[2]
+                        if (
+                            device_name.startswith("ram")
+                            or "loop" in device_name
+                            or device_name.startswith("sr")
+                        ):
+                            continue
+
+                        # Read operations
+                        reads_completed = int(parts[3])
+                        sectors_read = int(parts[5])
+
+                        # Write operations
+                        writes_completed = int(parts[7])
+                        sectors_written = int(parts[9])
+
+                        total_reads += reads_completed
+                        total_writes += writes_completed
+                        total_read_bytes += (
+                            sectors_read * 512
+                        )  # Convert sectors to bytes (512 bytes per sector)
+                        total_written_bytes += sectors_written * 512
+
+                    except (ValueError, IndexError):
+                        continue
+
+            if total_reads > 0 or total_writes > 0:
+                return {
+                    "reads_completed": total_reads,
+                    "writes_completed": total_writes,
+                    "read_bytes": total_read_bytes,
+                    "written_bytes": total_written_bytes,
+                }
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to get disk I/O info: {e}")
+            return None
+
+    @staticmethod
+    def _get_process_info(client: paramiko.SSHClient) -> Optional[Dict[str, int]]:
+        """
+        Get process count information.
+        """
+        try:
+            # Get total number of processes
+            total_processes = int(MetricsCollector._execute_command(client, "ps ax | wc -l"))
+            # Subtract 1 for header line
+            total_processes -= 1
+
+            # Get number of running processes
+            running_processes = int(MetricsCollector._execute_command(client, "ps r | wc -l"))
+            running_processes -= 1  # Subtract 1 for header line
+
+            return {
+                "total": total_processes,
+                "running": running_processes,
+            }
+        except Exception as e:
+            logger.warning(f"Failed to get process info: {e}")
             return None
 
     @staticmethod

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db.base import AsyncSessionLocal
 from app.models.server import Server, ServerStatus
+from app.services.alerts.alert_service import AlertEngine
 from app.services.collectors.container_collector import ContainerCollector
 from app.services.collectors.metrics_collector import MetricsCollector
 from app.services.collectors.snapshot_service import ContainerService, MetricService
@@ -60,6 +61,17 @@ class CollectorScheduler:
         while self.running:
             try:
                 await self._collect_all_servers()
+
+                # Run offline server alert checks
+                async with AsyncSessionLocal() as db:
+                    try:
+                        offline_alerts = await AlertEngine.check_offline_servers(db)
+                        logger.info(
+                            f"Offline server check completed, found {len(offline_alerts)} offline server alerts"
+                        )
+                    except Exception as e:
+                        logger.error(f"Error during offline server checks: {e}")
+
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {e}")
 
@@ -140,6 +152,14 @@ class CollectorScheduler:
 
         except Exception as e:
             logger.error(f"Error updating server status for {server.name}: {e}")
+
+        # Run alert evaluation for this server
+        try:
+            await AlertEngine.evaluate_server_metrics(db, server)
+            await AlertEngine.evaluate_containers(db, server)
+            logger.info(f"Alert evaluation completed for server {server.name}")
+        except Exception as e:
+            logger.error(f"Error running alert evaluation for {server.name}: {e}")
 
 
 # Global scheduler instance

@@ -54,19 +54,66 @@ class ServerService:
         limit: int = 100,
         environment: Optional[str] = None,
         status: Optional[str] = None,
+        tags: Optional[str] = None,
+        sort_by: Optional[str] = "created_at",
+        sort_order: Optional[str] = "desc",
     ) -> List[Server]:
         """
-        Get list of servers with optional filters.
+        Get list of servers with optional filters and sorting.
         """
         query = select(Server)
 
+        # Apply filters
         if environment:
             query = query.where(Server.environment == environment)
 
         if status:
             query = query.where(Server.status == status)
 
-        query = query.offset(skip).limit(limit).order_by(Server.created_at.desc())
+        if tags:
+            # Simple tag filtering: check if the tag exists in the JSON array representation
+            # This works with the JSON format stored in the database
+            from sqlalchemy import text
+
+            # Format the tag to match how it appears in the JSON array
+            query = query.where(Server.tags.like(f'%"{tags}"%'))
+
+        # Apply sorting
+        if sort_by == "name":
+            if sort_order == "asc":
+                query = query.order_by(Server.name.asc())
+            else:
+                query = query.order_by(Server.name.desc())
+        elif sort_by == "cpu_usage":
+            # For CPU usage, we need to join with metrics
+            from app.models.metric import MetricSnapshot
+
+            query = (
+                select(Server)
+                .outerjoin(MetricSnapshot, Server.id == MetricSnapshot.server_id)
+                .order_by(func.coalesce(MetricSnapshot.cpu_usage_percent, 0).desc())
+            )
+        elif sort_by == "memory_usage":
+            # For memory usage, we need to join with metrics
+            from app.models.metric import MetricSnapshot
+
+            query = (
+                select(Server)
+                .outerjoin(MetricSnapshot, Server.id == MetricSnapshot.server_id)
+                .order_by(func.coalesce(MetricSnapshot.memory_usage_percent, 0).desc())
+            )
+        elif sort_by == "last_seen":
+            if sort_order == "asc":
+                query = query.order_by(Server.last_seen.asc())
+            else:
+                query = query.order_by(Server.last_seen.desc())
+        else:  # default to created_at
+            if sort_order == "asc":
+                query = query.order_by(Server.created_at.asc())
+            else:
+                query = query.order_by(Server.created_at.desc())
+
+        query = query.offset(skip).limit(limit)
 
         result = await db.execute(query)
         return list(result.scalars().all())

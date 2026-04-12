@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.container import ContainerSnapshot
+from app.models.historical_metric import AggregationType, HistoricalMetric, MetricType
 from app.models.metric import MetricSnapshot
 from app.models.server import Server
 from app.schemas.container import ContainerSnapshotBase
@@ -21,7 +22,7 @@ class MetricService:
         db: AsyncSession, server_id: int, metrics: MetricSnapshotBase
     ) -> MetricSnapshot:
         """
-        Save metric snapshot to database.
+        Save metric snapshot to database and update historical metrics.
         """
         snapshot = MetricSnapshot(
             server_id=server_id,
@@ -40,13 +41,116 @@ class MetricService:
             network_in_bytes=metrics.network_in_bytes,
             network_out_bytes=metrics.network_out_bytes,
             uptime_seconds=metrics.uptime_seconds,
+            disk_read_bytes=metrics.disk_read_bytes,
+            disk_write_bytes=metrics.disk_write_bytes,
+            process_count=metrics.process_count,
+            active_connections=metrics.active_connections,
         )
 
         db.add(snapshot)
         await db.commit()
         await db.refresh(snapshot)
 
+        # Update historical metrics
+        await MetricService._update_historical_metrics(
+            db, server_id, metrics, snapshot.collected_at
+        )
+
         return snapshot
+
+    @staticmethod
+    async def _update_historical_metrics(
+        db: AsyncSession, server_id: int, metrics: MetricSnapshotBase, timestamp: datetime
+    ):
+        """
+        Update historical metrics based on the current snapshot.
+        """
+        from app.services.metrics.historical_service import HistoricalMetricService
+
+        # Round timestamp to nearest minute for consistent aggregation
+        minute_timestamp = timestamp.replace(second=0, microsecond=0)
+
+        # Map metric values to historical metric types
+        metric_updates = [
+            (MetricType.CPU_PERCENT, metrics.cpu_usage_percent),
+            (MetricType.MEMORY_PERCENT, metrics.memory_usage_percent),
+            (MetricType.DISK_PERCENT, metrics.disk_usage_percent),
+            (MetricType.LOAD_AVERAGE_1M, metrics.load_average_1m),
+            (MetricType.NETWORK_IN, metrics.network_in_bytes),
+            (MetricType.NETWORK_OUT, metrics.network_out_bytes),
+            (MetricType.DISK_READ, metrics.disk_read_bytes),
+            (MetricType.DISK_WRITE, metrics.disk_write_bytes),
+        ]
+
+        # Only add process count if it exists
+        if metrics.process_count is not None:
+            # We'll add this as a custom historical metric type when available
+            # For now, we'll store it in the extra_data
+            snapshot.extra_data["process_count"] = metrics.process_count
+
+        for metric_type, value in metric_updates:
+            if value is not None:
+                # Create or update the minute-level historical metric
+                await MetricService._save_minute_metric(
+                    db, server_id, metric_type, value, minute_timestamp
+                )
+
+    @staticmethod
+    async def _save_minute_metric(
+        db: AsyncSession, server_id: int, metric_type: MetricType, value: float, timestamp: datetime
+    ):
+        """
+        Save or update a minute-level historical metric.
+        """
+        from app.services.metrics.historical_service import HistoricalMetricService
+
+        # Look for existing minute-level entry
+        query = (
+            select(HistoricalMetric)
+            .where(
+                (HistoricalMetric.server_id == server_id)
+                & (HistoricalMetric.metric_type == metric_type)
+                & (HistoricalMetric.aggregation_level == AggregationType.MINUTE)
+                & (HistoricalMetric.timestamp == timestamp)
+            )
+            .order_by(HistoricalMetric.id.desc())
+            .limit(1)
+        )
+
+        result = await db.execute(query)
+        existing_metric = result.scalar_one_or_none()
+
+        if existing_metric:
+            # Update the existing metric with new min/max/avg values
+            if existing_metric.value_min is None or value < existing_metric.value_min:
+                existing_metric.value_min = value
+            if existing_metric.value_max is None or value > existing_metric.value_max:
+                existing_metric.value_max = value
+
+            # Calculate new average (simple approach - could be improved with weighted average)
+            total_samples = existing_metric.sample_count + 1
+            total_sum = (existing_metric.value_avg * existing_metric.sample_count) + value
+            existing_metric.value_avg = total_sum / total_samples
+
+            existing_metric.value_last = value
+            existing_metric.sample_count += 1
+        else:
+            # Create new minute-level metric
+            new_metric = HistoricalMetric(
+                server_id=server_id,
+                metric_type=metric_type,
+                aggregation_level=AggregationType.MINUTE,
+                timestamp=timestamp,
+                period_start=timestamp,
+                value_min=value,
+                value_max=value,
+                value_avg=value,
+                value_last=value,
+                sample_count=1,
+            )
+            db.add(new_metric)
+
+        await db.commit()
 
     @staticmethod
     async def get_latest_metrics(db: AsyncSession, server_id: int) -> Optional[MetricSnapshot]:
@@ -92,7 +196,9 @@ class ContainerService:
         """
         # Delete old snapshots for this server
         # TODO: Consider keeping history in Sprint 2+
-        await db.execute(select(ContainerSnapshot).where(ContainerSnapshot.server_id == server_id))
+        from sqlalchemy import delete
+
+        await db.execute(delete(ContainerSnapshot).where(ContainerSnapshot.server_id == server_id))
 
         # Create new snapshots
         snapshots = []
@@ -103,6 +209,18 @@ class ContainerService:
                 container_name=container_data.container_name,
                 image=container_data.image,
                 status=container_data.status,
+                extra_data={
+                    "cpu_percentage": container_data.cpu_percentage,
+                    "memory_usage_mb": container_data.memory_usage_mb,
+                    "memory_percentage": container_data.memory_percentage,
+                    "restart_count": container_data.restart_count,
+                    "health_status": container_data.health_status,
+                    "ports": container_data.ports,
+                    "command": container_data.command,
+                    "created_at": container_data.created_at,
+                    "started_at": container_data.started_at,
+                    "running": container_data.running,
+                },
             )
             db.add(snapshot)
             snapshots.append(snapshot)
