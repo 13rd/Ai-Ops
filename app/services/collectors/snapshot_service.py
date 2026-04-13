@@ -56,6 +56,11 @@ class MetricService:
             db, server_id, metrics, snapshot.collected_at
         )
 
+        # Update snapshot's extra_data with process count if available
+        if metrics.process_count is not None:
+            snapshot.extra_data["process_count"] = metrics.process_count
+            await db.commit()
+
         return snapshot
 
     @staticmethod
@@ -81,12 +86,6 @@ class MetricService:
             (MetricType.DISK_READ, metrics.disk_read_bytes),
             (MetricType.DISK_WRITE, metrics.disk_write_bytes),
         ]
-
-        # Only add process count if it exists
-        if metrics.process_count is not None:
-            # We'll add this as a custom historical metric type when available
-            # For now, we'll store it in the extra_data
-            snapshot.extra_data["process_count"] = metrics.process_count
 
         for metric_type, value in metric_updates:
             if value is not None:
