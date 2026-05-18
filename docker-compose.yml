@@ -149,6 +149,17 @@ services:
       - monitor-net
     restart: "no"
 
+  stress-target:
+    build: ./data_gen/testbeds/stress_target
+    container_name: server-monitor-stress-target
+    ports:
+      - "127.0.0.1:2224:22"
+    cap_add:
+      - SYS_NICE
+    networks:
+      - monitor-net
+    restart: unless-stopped
+
 networks:
   monitor-net:
     driver: bridge
