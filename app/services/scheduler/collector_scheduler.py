@@ -84,10 +84,15 @@ class CollectorScheduler:
         """
         async with AsyncSessionLocal() as db:
             try:
-                # Get all servers
-                servers = await ServerService.get_servers(db, skip=0, limit=10000)
+                # Get all servers; skip synthetic ones (ssh_username == "sim")
+                # — they are fed directly by the live simulator / bootstrap, not SSH.
+                all_servers = await ServerService.get_servers(db, skip=0, limit=10000)
+                servers = [s for s in all_servers if s.ssh_username != "sim"]
 
-                logger.info(f"Starting collection for {len(servers)} servers")
+                logger.info(
+                    f"Starting collection for {len(servers)} servers "
+                    f"({len(all_servers) - len(servers)} synthetic skipped)"
+                )
 
                 # Collect from each server
                 for server in servers:
