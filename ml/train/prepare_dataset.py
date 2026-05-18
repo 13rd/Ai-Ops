@@ -97,6 +97,15 @@ async def prepare(out_dir: Path) -> None:
             logger.info("server=%s rows=%d normal-train=%d",
                         srv.name, len(df), int(normal_mask.sum()))
 
+            # Anomaly runs in this dataset are 20-40 samples (5-10 min) — never
+            # reach 50% of the 60-step window. Use 0.25 ratio uniformly so train
+            # and eval see the same label distribution. Train uses denser stride
+            # to compensate for class imbalance.
+            bucket_cfg = {
+                "train": dict(stride=2, min_anomaly_ratio=0.25),
+                "val":   dict(stride=STRIDE, min_anomaly_ratio=0.25),
+                "test":  dict(stride=STRIDE, min_anomaly_ratio=0.25),
+            }
             for bucket, accX, accY in (
                 ("train", all_train_X, all_train_y),
                 ("val", all_val_X, all_val_y),
@@ -104,7 +113,9 @@ async def prepare(out_dir: Path) -> None:
             ):
                 rawX, y = splits[bucket]
                 Xn = scaler.transform(rawX).astype(np.float32)
-                wins, wlabels = build_windows(Xn, y, window_size=WINDOW_SIZE, stride=STRIDE)
+                wins, wlabels = build_windows(
+                    Xn, y, window_size=WINDOW_SIZE, **bucket_cfg[bucket],
+                )
                 accX.append(wins)
                 accY.extend(wlabels)
 
