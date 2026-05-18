@@ -49,3 +49,6 @@ htmlcov/
 # other
 *.md
 *.sh
+# ML artifacts
+models/
+data/processed/
