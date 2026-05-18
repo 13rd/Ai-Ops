@@ -29,9 +29,9 @@ def main() -> None:
     model = keras.models.load_model(args.model)
     recon = model.predict(Xn, verbose=0)
     mse = np.mean((Xn - recon) ** 2, axis=(1, 2))
-    # 90th percentile of val-normal errors — keeps AE recall high while
-    # tolerating ~10% false positives that the classifier filters downstream.
-    threshold = float(np.percentile(mse, 90))
+    # 80th percentile of val-normal errors — balances precision and recall;
+    # downstream classifier filters residual false positives.
+    threshold = float(np.percentile(mse, 80))
     payload = {
         "threshold": threshold,
         "mean": float(mse.mean()),

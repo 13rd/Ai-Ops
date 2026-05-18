@@ -42,9 +42,16 @@ async def _get_or_create_server(session: AsyncSession, name: str) -> Server:
 
 
 def _snapshot_kwargs(server_id: int, row: dict) -> dict:
+    containers = row.get("containers") or []
+    running = sum(1 for c in containers if (c or {}).get("status") == "running")
+    running_ratio = running / len(containers) if containers else 1.0
     return dict(
         server_id=server_id,
         collected_at=datetime.fromisoformat(row["timestamp"]),
+        extra_data={
+            "containers_running_ratio": running_ratio,
+            "swap_used_mb": row.get("swap_used_mb", 0.0),
+        },
         cpu_usage_percent=row.get("cpu_usage_percent"),
         load_average_1m=row.get("load_average_1m"),
         load_average_5m=row.get("load_average_5m"),

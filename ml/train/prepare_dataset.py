@@ -32,18 +32,30 @@ async def _load_server(session, server: Server) -> tuple[pd.DataFrame, list[str]
     snaps = res.scalars().all()
     if not snaps:
         return pd.DataFrame(), []
+    def _ratio(extra):
+        return (extra or {}).get("containers_running_ratio", 1.0)
+
+    def _swap(extra):
+        return (extra or {}).get("swap_used_mb", 0.0)
+
     df = pd.DataFrame([{
         "timestamp": s.collected_at,
         "cpu_usage_percent": s.cpu_usage_percent or 0.0,
         "load_average_1m": s.load_average_1m or 0.0,
         "memory_usage_percent": s.memory_usage_percent or 0.0,
-        "swap_used_mb": 0.0,  # not in DB schema; default 0
+        "swap_used_mb": _swap(s.extra_data),
         "disk_usage_percent": s.disk_usage_percent or 0.0,
         "disk_read_bytes": s.disk_read_bytes or 0,
         "disk_write_bytes": s.disk_write_bytes or 0,
         "network_in_bytes": s.network_in_bytes or 0,
         "network_out_bytes": s.network_out_bytes or 0,
-        "containers": [],  # ratio defaults to 1.0
+        # placeholder list whose ratio matches the persisted value (kept
+        # for extract_features which expects a containers column)
+        "containers": [
+            {"status": "running"} for _ in range(int(round(_ratio(s.extra_data) * 4)))
+        ] + [
+            {"status": "stopped"} for _ in range(4 - int(round(_ratio(s.extra_data) * 4)))
+        ],
     } for s in snaps])
 
     events = (await session.execute(
