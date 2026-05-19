@@ -1,67 +1,75 @@
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import select
+
 from app.core.deps import get_current_user, require_admin
+from app.models.user import UserRole
+from app.models.user_server_access import UserServerAccess
+from app.core.exceptions import NotFoundError, ValidationError
+from app.core.responses import ok, paginated
 from app.db.base import get_db
+from app.models.audit_log import AuditAction
 from app.models.user import User
-from app.schemas.response import error_response, success_response
 from app.schemas.server import ServerCreate, ServerResponse, ServerUpdate
+from app.services.audit.logger import AuditLogger
 from app.services.servers.server_service import ServerService
 
 router = APIRouter()
 
+VALID_SORT_FIELDS = {"created_at", "name", "cpu_usage", "memory_usage", "last_seen"}
+VALID_SORT_ORDERS = {"asc", "desc"}
 
-@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
+
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_server(
     server_data: ServerCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    """
-    Create a new server. Admin only.
-    """
     server = await ServerService.create_server(db, server_data)
-    return success_response(
+    await AuditLogger.log(
+        db,
+        action=AuditAction.SERVER_CREATED.value,
+        user=current_user,
+        resource_type="server",
+        resource_id=server.id,
+        details={"name": server.name, "host": server.host},
+        request=request,
+    )
+    return ok(
         data=ServerResponse.model_validate(server).model_dump(),
         message="Server created successfully",
     )
 
 
-@router.get("", response_model=dict)
+@router.get("")
 async def list_servers(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     environment: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     tags: Optional[str] = Query(None, description="Filter by tag"),
-    sort_by: str = Query(
-        "created_at",
-        description="Sort by field: created_at, name, cpu_usage, memory_usage, last_seen",
-    ),
-    sort_order: str = Query("desc", description="Sort order: asc, desc"),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Get list of servers with optional filters and sorting.
-    """
-    # Validate sort parameters
-    valid_sort_fields = ["created_at", "name", "cpu_usage", "memory_usage", "last_seen"]
-    if sort_by not in valid_sort_fields:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid sort field. Valid fields: {valid_sort_fields}",
+    if sort_by not in VALID_SORT_FIELDS:
+        raise ValidationError(
+            f"Invalid sort field. Valid fields: {sorted(VALID_SORT_FIELDS)}",
+            code="invalid_sort_field",
+        )
+    if sort_order not in VALID_SORT_ORDERS:
+        raise ValidationError(
+            "Invalid sort order. Use 'asc' or 'desc'.",
+            code="invalid_sort_order",
         )
 
-    if sort_order not in ["asc", "desc"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid sort order. Use 'asc' or 'desc'",
-        )
-
-    servers = await ServerService.get_servers(
+    servers, total = await ServerService.get_servers_with_count(
         db,
         skip=skip,
         limit=limit,
@@ -71,74 +79,93 @@ async def list_servers(
         sort_by=sort_by,
         sort_order=sort_order,
     )
-    return success_response(
-        data=[ServerResponse.model_validate(s).model_dump() for s in servers],
+    return paginated(
+        items=[ServerResponse.model_validate(s).model_dump() for s in servers],
+        limit=limit,
+        offset=skip,
+        total=total,
         message="Servers retrieved successfully",
     )
 
 
-@router.get("/{server_id}", response_model=dict)
+@router.get("/{server_id}")
 async def get_server(
     server_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Get server details by ID.
-    """
     server = await ServerService.get_server_by_id(db, server_id)
     if not server:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Server not found",
-        )
-
-    return success_response(
+        raise NotFoundError("Server not found")
+    return ok(
         data=ServerResponse.model_validate(server).model_dump(),
         message="Server retrieved successfully",
     )
 
 
-@router.put("/{server_id}", response_model=dict)
+@router.put("/{server_id}")
 async def update_server(
     server_id: int,
     server_data: ServerUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    """
-    Update server information. Admin only.
-    """
     server = await ServerService.update_server(db, server_id, server_data)
     if not server:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Server not found",
-        )
-
-    return success_response(
+        raise NotFoundError("Server not found")
+    await AuditLogger.log(
+        db,
+        action=AuditAction.SERVER_UPDATED.value,
+        user=current_user,
+        resource_type="server",
+        resource_id=server.id,
+        details=server_data.model_dump(
+            exclude_unset=True, exclude={"ssh_password", "ssh_private_key"}
+        ),
+        request=request,
+    )
+    return ok(
         data=ServerResponse.model_validate(server).model_dump(),
         message="Server updated successfully",
     )
 
 
-@router.delete("/{server_id}", response_model=dict)
+@router.delete("/{server_id}")
 async def delete_server(
     server_id: int,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    """
-    Delete server by ID. Admin only.
-    """
     deleted = await ServerService.delete_server(db, server_id)
     if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Server not found",
-        )
-
-    return success_response(
-        data={"server_id": server_id},
-        message="Server deleted successfully",
+        raise NotFoundError("Server not found")
+    await AuditLogger.log(
+        db,
+        action=AuditAction.SERVER_DELETED.value,
+        user=current_user,
+        resource_type="server",
+        resource_id=server_id,
+        request=request,
     )
+    return ok(data={"server_id": server_id}, message="Server deleted successfully")
+
+
+@router.get("/{server_id}/my-access")
+async def get_my_server_access(
+    server_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role == UserRole.ADMIN.value:
+        return ok(data={"permission": "write"})
+    row = (
+        await db.execute(
+            select(UserServerAccess).where(
+                UserServerAccess.user_id == current_user.id,
+                UserServerAccess.server_id == server_id,
+            )
+        )
+    ).scalar_one_or_none()
+    return ok(data={"permission": row.permission if row else None})
