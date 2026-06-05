@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
+import numpy as np
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,7 +29,7 @@ from app.services.ml.explainer import Explainer
 from app.services.ml.recommender import Recommender
 from app.services.ml.registry import get_registry
 from app.services.notifications.dispatcher import NotificationDispatcher
-from ml.config import WINDOW_SIZE, label_to_index
+from ml.config import FEATURE_COLS, WINDOW_SIZE, label_to_index
 
 logger = logging.getLogger(__name__)
 
@@ -82,16 +83,30 @@ class MLPipeline:
         if candidate is None:
             return []
 
-        cls_label, confidence, _probs = AnomalyClassifier(registry).classify(
-            candidate.window
-        )
-        if cls_label == "normal":
-            return []
+        if candidate.per_feature_triggered:
+            # Anomaly was detected via per-feature thresholds (not global AE error).
+            # The CNN-LSTM classifier was trained on different servers; its predictions
+            # are unreliable here. Use reconstruction-based labeling directly so that
+            # the dominant anomalous feature (mem, disk, network, containers) determines
+            # the type instead of a potentially wrong classifier label that would then
+            # get blocked by deduplication.
+            cls_label = _label_from_reconstruction(candidate.window, candidate.window_recon)
+            confidence = 0.5
+        else:
+            cls_label, confidence, _probs = AnomalyClassifier(registry).classify(
+                candidate.window
+            )
+            if cls_label == "normal":
+                cls_label = _label_from_reconstruction(candidate.window, candidate.window_recon)
+                confidence = 0.5
         candidate.anomaly_type = cls_label
         candidate.features["confidence"] = confidence
 
         explanation = Explainer(registry).explain_window(
-            candidate.window, candidate.window_recon, class_idx=label_to_index(cls_label),
+            candidate.window,
+            candidate.window_recon,
+            class_idx=label_to_index(cls_label),
+            scaler=registry.get_scaler(server.name),
         )
 
         return await MLPipeline._persist_and_dispatch(
@@ -215,6 +230,37 @@ class MLPipeline:
             )
         )
         return {row for row in result.scalars().all()}
+
+
+def _label_from_reconstruction(window: np.ndarray, window_recon: np.ndarray) -> str:  # noqa: N803
+    """Derive an anomaly label from per-feature reconstruction errors.
+
+    Used as a fallback when the classifier returns "normal" despite the AE
+    firing — typically because the server's per-server scaler maps its feature
+    values far outside the classifier's training distribution.
+
+    Uses only the most recent RECENT_ROWS timesteps so that stale anomaly
+    patterns earlier in the 60-snapshot window don't dominate the label
+    (e.g. a CPU spike from 10 minutes ago must not override a current disk fill).
+    """
+    recent_rows = 20
+    feat_mse = ((window - window_recon)[0, -recent_rows:, :] ** 2).mean(axis=0)  # shape (10,)
+    top_idx = int(np.argmax(feat_mse))
+    col = FEATURE_COLS[top_idx] if top_idx < len(FEATURE_COLS) else ""
+
+    if col in ("cpu_percent", "load_avg_1m"):
+        return "cpu_spike"
+    if col in ("mem_percent", "swap_used_mb"):
+        return "memory_leak"
+    if col in ("disk_percent", "disk_read_bps", "disk_write_bps"):
+        return "disk_fill"
+    if col in ("net_in_bps", "net_out_bps"):
+        return "network_storm"
+    if col == "containers_running_ratio":
+        # Low ratio → crash; ratio still OK but other metrics off → service down
+        ratio = float(window[0, :, top_idx].mean())
+        return "container_crash" if ratio < 0.5 else "service_down"
+    return "cpu_spike"  # safe default
 
 
 # Re-export for backwards compatibility (used by tests / external callers)

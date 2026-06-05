@@ -34,6 +34,10 @@ class AnomalyCandidate:
     window: Optional[np.ndarray] = None  # shape (1, 60, 10), scaled
     window_recon: Optional[np.ndarray] = None
     source: str = "rule_based"
+    # True when detected via per-feature threshold (not global). Signals the
+    # pipeline to skip the CNN-LSTM classifier (which was trained on different
+    # servers) and go directly to reconstruction-based labeling.
+    per_feature_triggered: bool = False
 
 
 # Thresholds are intentionally simple. The pipeline's contract is the
@@ -147,13 +151,35 @@ class AutoencoderDetector:
         tail = snapshots[-WINDOW_SIZE:]
         df = _snapshots_to_df(tail)
         raw = extract_features(df)
-        X = scaler.transform(raw).astype(np.float32).reshape(1, WINDOW_SIZE, 10)
-        X_hat = self.registry.ae.predict(X, verbose=0)
-        err = float(np.mean((X - X_hat) ** 2))
-        if err <= self.registry.threshold:
-            return None
-        std = self.registry.threshold_std or 1.0
-        z = (err - self.registry.threshold_mean) / std
+        x_norm = scaler.transform(raw).astype(np.float32).reshape(1, WINDOW_SIZE, 10)
+        x_hat = self.registry.ae.predict(x_norm, verbose=0)
+        sq_err = (x_norm - x_hat) ** 2  # (1, WINDOW_SIZE, 10)
+        err = float(np.mean(sq_err))
+
+        thr, thr_mean, thr_std = self.registry.get_threshold(server_name)
+        pf_thr = self.registry.get_per_feature_thresholds(server_name)
+
+        # Use per-feature thresholds when available: detect if ANY feature's
+        # recent reconstruction error exceeds its per-feature threshold.
+        # This avoids missing anomalies in memory/disk/network when the global
+        # error is dominated by a mis-calibrated feature (e.g. cpu scale_=1.0).
+        recent = 20
+        per_feature_triggered = False
+        if pf_thr is not None:
+            recent_feat_err = sq_err[0, -recent:, :].mean(axis=0)  # (10,)
+            feat_excess = recent_feat_err / np.maximum(pf_thr, 1e-9)
+            max_feat_excess = float(np.max(feat_excess))
+            if max_feat_excess <= 1.0 and err <= thr:
+                return None
+            # Use per-feature excess as z-score proxy
+            z = max_feat_excess - 1.0
+            per_feature_triggered = True
+        else:
+            if err <= thr:
+                return None
+            std = thr_std or 1.0
+            z = (err - thr_mean) / std
+
         severity = (
             AnomalySeverity.LOW.value if z < 1
             else AnomalySeverity.MEDIUM.value if z < 2
@@ -164,12 +190,13 @@ class AutoencoderDetector:
             anomaly_type="unknown",  # classifier fills in
             severity=severity,
             score=err,
-            threshold=float(self.registry.threshold),
+            threshold=float(thr),
             features={"reconstruction_error": err, "z_score": float(z)},
             metrics_snapshot=_serialize_snapshot(tail[-1]),
-            window=X,
-            window_recon=X_hat,
+            window=x_norm,
+            window_recon=x_hat,
             source="autoencoder",
+            per_feature_triggered=per_feature_triggered,
         )
 
 
