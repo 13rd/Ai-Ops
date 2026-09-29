@@ -17,30 +17,20 @@ from app.models.server import Server
 from app.models.user import User
 from app.services.servers.connection_service import SSHConnectionService
 
-
 logger = logging.getLogger(__name__)
 
-
 class ConsoleService:
-    """
-    Service for managing SSH console sessions through WebSocket gateway.
-    """
 
-    # Store active sessions - in production, you'd want to use Redis or similar for persistence
     _active_sessions: Dict[str, Dict] = {}
 
-    # Timeout configurations
-    SSH_CONNECTION_TIMEOUT = 30  # seconds
-    SESSION_CLEANUP_INTERVAL = 300  # seconds (5 minutes)
+    SSH_CONNECTION_TIMEOUT = 30
+    SESSION_CLEANUP_INTERVAL = 300
 
     @classmethod
     async def start_session(
         cls, db: AsyncSession, user: User, server_id: int, client_ip: Optional[str] = None
     ) -> Optional[str]:
-        """
-        Start a new console session and return a session token.
-        """
-        # Get server by ID
+
         server_query = select(Server).where(Server.id == server_id)
         result = await db.execute(server_query)
         server = result.scalar_one_or_none()
@@ -49,10 +39,8 @@ class ConsoleService:
             logger.error(f"Server with ID {server_id} not found")
             return None
 
-        # Create session token
         session_token = secrets.token_urlsafe(32)
 
-        # Create session record in DB
         session = ConsoleSession(
             session_token=session_token,
             user_id=user.id,
@@ -66,7 +54,6 @@ class ConsoleService:
         await db.commit()
         await db.refresh(session)
 
-        # Store in active sessions cache
         cls._active_sessions[session_token] = {
             "session_id": session.id,
             "user_id": user.id,
@@ -77,7 +64,7 @@ class ConsoleService:
             "is_connected": False,
             "last_activity": datetime.utcnow(),
             "connection_attempts": 0,
-            "max_connection_attempts": 3,  # Max reconnect attempts
+            "max_connection_attempts": 3,
         }
 
         logger.info(
@@ -87,25 +74,20 @@ class ConsoleService:
 
     @classmethod
     async def connect_session(cls, session_token: str) -> Optional[paramiko.SSHClient]:
-        """
-        Connect to the server via SSH for a given session with retry logic.
-        """
+
         if session_token not in cls._active_sessions:
             logger.error(f"Session {session_token} not found in active sessions")
             return None
 
         session_data = cls._active_sessions[session_token]
 
-        # Check connection attempts
         if session_data["connection_attempts"] >= session_data["max_connection_attempts"]:
             logger.error(f"Max connection attempts reached for session {session_token}")
             return None
 
         try:
-            # Get server details
             server = session_data["server_details"]
 
-            # Create SSH client with timeout
             ssh_client = await SSHConnectionService.get_ssh_client(server)
 
             if not ssh_client:
@@ -113,16 +95,13 @@ class ConsoleService:
                 session_data["connection_attempts"] += 1
                 return None
 
-            # Get interactive shell with timeout
             ssh_shell = ssh_client.invoke_shell(term="xterm")
-            # Set timeout for shell operations
             ssh_shell.settimeout(cls.SSH_CONNECTION_TIMEOUT)
 
-            # Store SSH connection in session data
             session_data["ssh_client"] = ssh_client
             session_data["ssh_shell"] = ssh_shell
             session_data["is_connected"] = True
-            session_data["connection_attempts"] = 0  # Reset on successful connection
+            session_data["connection_attempts"] = 0
             session_data["last_activity"] = datetime.utcnow()
 
             logger.info(f"Successfully connected SSH session {session_token}")
@@ -139,30 +118,23 @@ class ConsoleService:
 
     @classmethod
     def get_session_data(cls, session_token: str) -> Optional[Dict]:
-        """
-        Get session data by token.
-        """
+
         return cls._active_sessions.get(session_token)
 
     @classmethod
     def update_session_activity(cls, session_token: str):
-        """
-        Update the last activity timestamp for a session.
-        """
+
         if session_token in cls._active_sessions:
             cls._active_sessions[session_token]["last_activity"] = datetime.utcnow()
 
     @classmethod
     async def cleanup_inactive_sessions(cls):
-        """
-        Clean up inactive sessions to prevent resource leaks.
-        """
+
         current_time = datetime.utcnow()
         inactive_threshold = current_time - timedelta(
             seconds=cls.SSH_CONNECTION_TIMEOUT * 10
-        )  # 10x timeout as threshold
+        )
 
-        # Create a list of sessions to remove to prevent modification during iteration
         sessions_to_remove = []
 
         for token, session_data in cls._active_sessions.items():
@@ -175,9 +147,7 @@ class ConsoleService:
 
     @classmethod
     async def send_to_session(cls, session_token: str, data: str) -> bool:
-        """
-        Send data to the SSH session.
-        """
+
         session_data = cls._active_sessions.get(session_token)
         if not session_data or not session_data.get("is_connected"):
             logger.warning(f"Cannot send to disconnected session {session_token}")
@@ -195,9 +165,7 @@ class ConsoleService:
 
     @classmethod
     async def read_from_session(cls, session_token: str, size: int = 1024) -> Optional[str]:
-        """
-        Read data from the SSH session.
-        """
+
         session_data = cls._active_sessions.get(session_token)
         if not session_data or not session_data.get("is_connected"):
             logger.warning(f"Cannot read from disconnected session {session_token}")
@@ -220,16 +188,13 @@ class ConsoleService:
     async def terminate_session(
         cls, db: Optional[AsyncSession], session_token: str, reason: str = "Normal termination"
     ) -> bool:
-        """
-        Terminate a console session.
-        """
+
         if session_token not in cls._active_sessions:
             logger.warning(f"Attempted to terminate non-existent session {session_token}")
             return False
 
         session_data = cls._active_sessions[session_token]
 
-        # Close SSH connection if active
         ssh_shell = session_data.get("ssh_shell")
         ssh_client = session_data.get("ssh_client")
 
@@ -245,9 +210,7 @@ class ConsoleService:
             except Exception as e:
                 logger.warning(f"Error closing SSH client: {e}")
 
-        # Update database status if db session is provided
         if db is not None:
-            # Determine the final status based on the reason
             if (
                 "error" in reason.lower()
                 or "failed" in reason.lower()
@@ -259,7 +222,6 @@ class ConsoleService:
 
             await cls.update_session_status(db, session_token, final_status, reason)
 
-        # Remove from active sessions
         del cls._active_sessions[session_token]
 
         logger.info(f"Terminated console session {session_token}, reason: {reason}")
@@ -269,9 +231,7 @@ class ConsoleService:
     async def update_session_status(
         cls, db: AsyncSession, session_token: str, status: ConsoleSessionStatus, reason: str = None
     ) -> bool:
-        """
-        Update session status in database.
-        """
+
         query = select(ConsoleSession).where(ConsoleSession.session_token == session_token)
         result = await db.execute(query)
         session_obj = result.scalar_one_or_none()
@@ -283,7 +243,6 @@ class ConsoleService:
         if reason:
             session_obj.termination_reason = reason
 
-        # Calculate duration if ending
         if status in [
             ConsoleSessionStatus.COMPLETED,
             ConsoleSessionStatus.FAILED,

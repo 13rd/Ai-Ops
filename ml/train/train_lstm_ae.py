@@ -1,4 +1,3 @@
-"""Train LSTM AE on TRAIN normal windows only."""
 from __future__ import annotations
 
 import argparse
@@ -10,7 +9,6 @@ from tensorflow import keras
 
 from ml.config import label_to_index
 from ml.models.lstm_autoencoder import build_lstm_autoencoder
-
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
@@ -42,7 +40,6 @@ def main() -> None:
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     model.save(args.out)
     logging.info("saved %s", args.out)
-
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 32px; background: #ffffff; }
+  #d { display: inline-block; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+<pre id="d" class="mermaid">
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "DejaVu Sans",
+    "fontSize": "17px",
+    "primaryColor": "#E8F4F3",
+    "primaryBorderColor": "#007A72",
+    "primaryTextColor": "#0D2137",
+    "lineColor": "#3B5068",
+    "clusterBkg": "#F5F8FC",
+    "clusterBorder": "#A8D8D4"
+  },
+  "flowchart": { "useMaxWidth": false, "htmlLabels": true, "padding": 16, "nodeSpacing": 55, "rankSpacing": 60 }
+}}%%
+flowchart TB
+
+    subgraph USERS[" Пользователи "]
+        direction LR
+        UI["Web-интерфейс — React SPA"]
+        TG["Telegram"]
+        GRAF["Grafana"]
+    end
+
+    NGINX["Nginx — reverse proxy + статика"]:::accent
+
+    subgraph BACKEND[" Сервер приложения — FastAPI (async) "]
+        API["REST API + WebSocket<br/>авторизация · JWT · RBAC"]
+        COLLECT["Сбор метрик<br/>планировщик → SSH:<br/>CPU · RAM · диск · сеть · контейнеры"]
+        subgraph ML[" Гибридный ML-конвейер "]
+            direction LR
+            DET["LSTM-Autoencoder<br/>обнаружение"]:::accent
+            CLF["CNN-LSTM<br/>классификация"]:::accent
+            EXP["SHAP<br/>объяснение"]:::accent
+            REC["LLM<br/>рекомендация"]:::accent
+            DET --> CLF --> EXP --> REC
+        end
+    end
+
+    SRV["Целевые серверы"]
+
+    subgraph DATA[" Хранение "]
+        direction LR
+        PG[("PostgreSQL<br/>TimescaleDB")]
+        REDIS[("Redis")]
+        OLLAMA["Ollama LLM"]
+    end
+
+    UI -->|HTTPS| NGINX
+    NGINX --> API
+    API --> COLLECT
+    COLLECT -->|SSH| SRV
+    COLLECT --> PG
+    PG -->|окна метрик| ML
+    ML -->|аномалии + рекомендации| PG
+    REC -.->|запрос| OLLAMA
+    API <--> PG
+    API --> REDIS
+    API -->|алерты| TG
+    GRAF -.->|запросы| PG
+
+    classDef accent fill:#007A72,stroke:#005A54,color:#ffffff;
+</pre>
+<script>
+  mermaid.initialize({ startOnLoad: true });
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+version: '3.8'
+
+# Testbed for generating anomaly detection training data.
+# 3 "server" containers (ubuntu:22.04 with sshd) + 3 "test-app" containers (nginx:alpine).
+# Each server pair has different resource limits to produce diverse metric profiles.
+# Run: docker compose -f data_gen/testbeds/docker-compose.testbed.yml up -d
+
+networks:
+  testbed-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+services:
+
+  # ── Server A: normal load + cpu_spike profile ────────────────────────────
+  testbed-server-a:
+    image: ubuntu:22.04
+    container_name: testbed-server-a
+    hostname: server-a
+    networks:
+      testbed-net:
+        ipv4_address: 172.28.0.10
+    ports:
+      - "2221:22"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    cap_add:
+      - SYS_RESOURCE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq openssh-server stress-ng docker.io iproute2 &&
+        mkdir -p /run/sshd &&
+        echo 'root:testbed123' | chpasswd &&
+        sed -i 's/#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        sed -i 's/#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        /usr/sbin/sshd -D
+      "
+    restart: unless-stopped
+
+  testbed-app-a:
+    image: nginx:alpine
+    container_name: testbed-app-a
+    networks:
+      - testbed-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    ports:
+      - "8081:80"
+    restart: "no"
+
+  # ── Server B: memory_leak + container_crash profile ──────────────────────
+  testbed-server-b:
+    image: ubuntu:22.04
+    container_name: testbed-server-b
+    hostname: server-b
+    networks:
+      testbed-net:
+        ipv4_address: 172.28.0.11
+    ports:
+      - "2222:22"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    cap_add:
+      - SYS_RESOURCE
+      - NET_ADMIN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq openssh-server stress-ng docker.io iproute2 &&
+        mkdir -p /run/sshd &&
+        echo 'root:testbed123' | chpasswd &&
+        sed -i 's/#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        sed -i 's/#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        /usr/sbin/sshd -D
+      "
+    restart: unless-stopped
+
+  testbed-app-b:
+    image: nginx:alpine
+    container_name: testbed-app-b
+    networks:
+      - testbed-net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    ports:
+      - "8082:80"
+    restart: "no"
+
+  # ── Server C: service_down profile ───────────────────────────────────────
+  testbed-server-c:
+    image: ubuntu:22.04
+    container_name: testbed-server-c
+    hostname: server-c
+    networks:
+      testbed-net:
+        ipv4_address: 172.28.0.12
+    ports:
+      - "2223:22"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    cap_add:
+      - SYS_RESOURCE
+      - NET_ADMIN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq openssh-server stress-ng docker.io iproute2 iperf3 &&
+        mkdir -p /run/sshd &&
+        echo 'root:testbed123' | chpasswd &&
+        sed -i 's/#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        sed -i 's/#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+        /usr/sbin/sshd -D
+      "
+    restart: unless-stopped
+
+  testbed-app-c:
+    image: nginx:alpine
+    container_name: testbed-app-c
+    networks:
+      - testbed-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    ports:
+      - "8083:80"
+    cap_add:
+      - NET_ADMIN
+    restart: "no"
+
+  # ── Simulator: realistic production-like service emulator ─────────────────
+  server-simulator:
+    build:
+      context: ../..
+      dockerfile: data_gen/simulator/Dockerfile
+    container_name: testbed-simulator
+    hostname: server-sim
+    networks:
+      testbed-net:
+        ipv4_address: 172.28.0.20
+    ports:
+      - "8100:8100"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    command: >
+      python -m data_gen.simulator
+        --config data_gen/simulator/default_config.yml
+        -v
+    restart: unless-stopped

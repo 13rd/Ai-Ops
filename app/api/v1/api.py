@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     connections,
     console,
     containers,
+    llm_settings,
     metrics,
     notifications,
     recommendations,
@@ -39,6 +40,7 @@ api_router.include_router(
     recommendations.anomaly_recs_router, prefix="", tags=["recommendations"]
 )
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+api_router.include_router(llm_settings.router, prefix="/llm-settings", tags=["llm-settings"])
 api_router.include_router(ws_console.router, prefix="", tags=["console-ws"])
 api_router.include_router(ws_container_logs.router, prefix="", tags=["container-logs-ws"])
 

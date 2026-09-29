@@ -2,7 +2,6 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy import select
@@ -11,13 +10,9 @@ from app.core.security import get_password_hash
 from app.db.base import AsyncSessionLocal
 from app.models.user import User, UserRole
 
-
 async def seed_users():
-    """
-    Seed initial users for development.
-    """
+
     async with AsyncSessionLocal() as db:
-        # Check if admin user exists
         result = await db.execute(select(User).where(User.username == "admin"))
         admin_user = result.scalar_one_or_none()
 
@@ -34,7 +29,6 @@ async def seed_users():
         else:
             print("✓ Admin user already exists")
 
-        # Check if operator user exists
         result = await db.execute(select(User).where(User.username == "operator"))
         operator_user = result.scalar_one_or_none()
 
@@ -53,7 +47,6 @@ async def seed_users():
 
         await db.commit()
         print("\n✓ Database seeded successfully!")
-
 
 if __name__ == "__main__":
     print("Seeding database...")

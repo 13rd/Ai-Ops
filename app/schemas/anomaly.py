@@ -5,7 +5,6 @@ from pydantic import BaseModel, field_validator
 
 from app.models.anomaly import AnomalySeverity, AnomalyStatus, AnomalyType
 
-
 class AnomalyResponse(BaseModel):
     id: int
     server_id: int
@@ -14,8 +13,6 @@ class AnomalyResponse(BaseModel):
     severity: str
     reconstruction_error: float
     threshold: float
-    # Legacy rule-based pipeline wrote {feature: weight}; the AE+classifier
-    # pipeline writes a ranked list of {metric, impact_percent, ...} dicts.
     shap_explanation: Union[dict[str, Any], list[dict[str, Any]]] = {}
     metrics_snapshot: dict[str, Any] = {}
     status: str
@@ -24,7 +21,6 @@ class AnomalyResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 class AnomalyStatusUpdate(BaseModel):
     status: str
@@ -37,8 +33,6 @@ class AnomalyStatusUpdate(BaseModel):
             raise ValueError(f"status must be one of {sorted(allowed)}")
         return value
 
-
-# Re-export enum values for endpoint param validation.
 ANOMALY_TYPES = {t.value for t in AnomalyType}
 ANOMALY_SEVERITIES = {s.value for s in AnomalySeverity}
 ANOMALY_STATUSES = {s.value for s in AnomalyStatus}

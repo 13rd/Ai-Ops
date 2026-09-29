@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/python -m ruff check app/core/exceptions.py app/core/responses.py app/core/secrets.py app/core/deps.py app/core/config.py app/main.py app/schemas/common.py app/schemas/response.py app/models/server.py app/services/servers/server_service.py app/services/servers/connection_service.py app/api/v1/endpoints/ scripts/encrypt_existing_secrets.py)",
+      "Bash(.venv/bin/python -m ruff check app/core/ app/main.py app/schemas/common.py app/schemas/response.py app/models/server.py app/services/servers/ app/api/v1/endpoints/ scripts/encrypt_existing_secrets.py)",
+      "Bash(.venv/bin/python -m ruff check app/models/anomaly.py app/models/recommendation.py app/models/notification.py app/models/audit_log.py app/models/user_server_access.py app/models/refresh_token.py app/models/server.py app/models/__init__.py alembic/versions/436482c3bd63_mvp_core_tables.py)",
+      "Bash(.venv/bin/python -m ruff check app/services/users/ app/services/audit/ app/api/v1/endpoints/users.py app/api/v1/endpoints/audit.py app/api/v1/endpoints/auth.py app/api/v1/endpoints/servers.py app/api/v1/endpoints/containers.py app/api/v1/api.py app/schemas/user.py app/schemas/audit.py)",
+      "Bash(.venv/bin/python -m ruff check app/api/v1 app/services/users app/services/audit app/schemas app/models app/core app/main.py)",
+      "Bash(.venv/bin/python -m ruff check app/services/ml app/api/v1/endpoints/anomalies.py app/api/v1/endpoints/recommendations.py app/schemas/anomaly.py app/schemas/recommendation.py app/api/v1/api.py)",
+      "Bash(.venv/bin/python -m ruff check app/services/cache app/services/notifications app/api/v1/endpoints/notifications.py app/services/ml/pipeline.py app/schemas/notification.py app/api/v1/api.py)",
+      "Bash(.venv/bin/python -m ruff check --fix app/services/cache app/services/notifications app/api/v1/endpoints/notifications.py app/services/ml/pipeline.py)",
+      "Bash(.venv/bin/python -m ruff check app/api/v1/websocket app/api/v1/api.py)",
+      "Bash(npm run *)",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_fill_form",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_resize"
+    ]
+  },
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "superpowers@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": true
+  }
+}

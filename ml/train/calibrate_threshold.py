@@ -1,4 +1,3 @@
-"""Pick anomaly threshold from val-normal reconstruction errors (mean + 3·std)."""
 from __future__ import annotations
 
 import argparse
@@ -10,7 +9,6 @@ import numpy as np
 from tensorflow import keras
 
 from ml.config import label_to_index
-
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
@@ -29,14 +27,12 @@ def main() -> None:
     model = keras.models.load_model(args.model)
     recon = model.predict(Xn, verbose=0)
     mse = np.mean((Xn - recon) ** 2, axis=(1, 2))
-    # 80th percentile of val-normal errors — balances precision and recall;
-    # downstream classifier filters residual false positives.
     threshold = float(np.percentile(mse, 80))
     payload = {
         "threshold": threshold,
         "mean": float(mse.mean()),
         "std": float(mse.std()),
-        "p90": threshold,
+        "p80": threshold,
         "p95": float(np.percentile(mse, 95)),
     }
     Path(args.out).write_text(json.dumps(payload, indent=2))
@@ -45,14 +41,12 @@ def main() -> None:
         payload["threshold"], payload["mean"], payload["std"],
     )
 
-    # SHAP background set for DeepExplainer (val-normal random sample)
     rng = np.random.default_rng(0)
     k = min(args.background_size, len(Xn))
     bg = Xn[rng.choice(len(Xn), size=k, replace=False)]
     bg_path = Path(args.model).parent / "background.npy"
     np.save(bg_path, bg)
     logging.info("saved background set %s shape=%s", bg_path, bg.shape)
-
 
 if __name__ == "__main__":
     main()

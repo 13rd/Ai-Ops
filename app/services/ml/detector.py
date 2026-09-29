@@ -1,12 +1,3 @@
-"""Anomaly detection — rule-based fallback + LSTM Autoencoder.
-
-`RuleBasedDetector` keeps the original threshold logic as the fallback when
-no ML models are loaded. `AutoencoderDetector` consumes a 60-row window from
-the metric history and returns a candidate if the AE reconstruction error
-exceeds the calibrated threshold. The downstream pipeline classifies the
-anomaly type via the CNN-LSTM classifier.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -21,28 +12,19 @@ from app.models.server import Server, ServerStatus
 from ml.config import WINDOW_SIZE
 from ml.features import extract_features
 
-
 @dataclass
 class AnomalyCandidate:
     anomaly_type: str
     severity: str
-    score: float  # normalised 0..1+ score, role of reconstruction_error
+    score: float
     threshold: float
     features: dict[str, float] = field(default_factory=dict)
     metrics_snapshot: dict[str, Any] = field(default_factory=dict)
-    # AutoencoderDetector fills these for downstream classifier/explainer.
-    window: Optional[np.ndarray] = None  # shape (1, 60, 10), scaled
+    window: Optional[np.ndarray] = None
     window_recon: Optional[np.ndarray] = None
     source: str = "rule_based"
-    # True when detected via per-feature threshold (not global). Signals the
-    # pipeline to skip the CNN-LSTM classifier (which was trained on different
-    # servers) and go directly to reconstruction-based labeling.
     per_feature_triggered: bool = False
 
-
-# Thresholds are intentionally simple. The pipeline's contract is the
-# interface, not these numbers — once the LSTM model is plugged in, this
-# whole class is replaced.
 CPU_HIGH = 90.0
 CPU_CRITICAL = 95.0
 MEM_HIGH = 90.0
@@ -50,7 +32,6 @@ MEM_CRITICAL = 95.0
 DISK_HIGH = 90.0
 DISK_CRITICAL = 95.0
 LOAD_AVG_HIGH_PER_CPU = 2.0
-
 
 class RuleBasedDetector:
     @staticmethod
@@ -74,7 +55,6 @@ class RuleBasedDetector:
 
         snapshot = _serialize_snapshot(latest)
 
-        # CPU spike
         cpu = latest.cpu_usage_percent
         if cpu is not None and cpu >= CPU_HIGH:
             severity = (
@@ -91,7 +71,6 @@ class RuleBasedDetector:
                 )
             )
 
-        # Memory pressure → memory_leak (stub heuristic)
         mem = latest.memory_usage_percent
         if mem is not None and mem >= MEM_HIGH:
             severity = (
@@ -108,7 +87,6 @@ class RuleBasedDetector:
                 )
             )
 
-        # Disk pressure
         disk = latest.disk_usage_percent
         if disk is not None and disk >= DISK_HIGH:
             severity = (
@@ -129,13 +107,9 @@ class RuleBasedDetector:
 
         return candidates
 
-
-# Backwards-compatible alias — existing pipeline imports `AnomalyDetector`.
 AnomalyDetector = RuleBasedDetector
 
-
 class AutoencoderDetector:
-    """LSTM AE detector. Returns at most one candidate per call."""
 
     def __init__(self, registry):
         self.registry = registry
@@ -153,25 +127,20 @@ class AutoencoderDetector:
         raw = extract_features(df)
         x_norm = scaler.transform(raw).astype(np.float32).reshape(1, WINDOW_SIZE, 10)
         x_hat = self.registry.ae.predict(x_norm, verbose=0)
-        sq_err = (x_norm - x_hat) ** 2  # (1, WINDOW_SIZE, 10)
+        sq_err = (x_norm - x_hat) ** 2
         err = float(np.mean(sq_err))
 
         thr, thr_mean, thr_std = self.registry.get_threshold(server_name)
         pf_thr = self.registry.get_per_feature_thresholds(server_name)
 
-        # Use per-feature thresholds when available: detect if ANY feature's
-        # recent reconstruction error exceeds its per-feature threshold.
-        # This avoids missing anomalies in memory/disk/network when the global
-        # error is dominated by a mis-calibrated feature (e.g. cpu scale_=1.0).
         recent = 20
         per_feature_triggered = False
         if pf_thr is not None:
-            recent_feat_err = sq_err[0, -recent:, :].mean(axis=0)  # (10,)
+            recent_feat_err = sq_err[0, -recent:, :].mean(axis=0)
             feat_excess = recent_feat_err / np.maximum(pf_thr, 1e-9)
             max_feat_excess = float(np.max(feat_excess))
             if max_feat_excess <= 1.0 and err <= thr:
                 return None
-            # Use per-feature excess as z-score proxy
             z = max_feat_excess - 1.0
             per_feature_triggered = True
         else:
@@ -187,7 +156,7 @@ class AutoencoderDetector:
             else AnomalySeverity.CRITICAL.value
         )
         return AnomalyCandidate(
-            anomaly_type="unknown",  # classifier fills in
+            anomaly_type="unknown",
             severity=severity,
             score=err,
             threshold=float(thr),
@@ -198,7 +167,6 @@ class AutoencoderDetector:
             source="autoencoder",
             per_feature_triggered=per_feature_triggered,
         )
-
 
 def _snapshots_to_df(snaps: list[MetricSnapshot]) -> pd.DataFrame:
     def _extra(s, key, default):
@@ -218,14 +186,12 @@ def _snapshots_to_df(snaps: list[MetricSnapshot]) -> pd.DataFrame:
         "containers": _ratio_to_list(_extra(s, "containers_running_ratio", 1.0)),
     } for s in snaps])
 
-
 def _ratio_to_list(ratio: float) -> list[dict]:
     running = int(round(max(0.0, min(1.0, ratio)) * 4))
     return (
         [{"status": "running"}] * running
         + [{"status": "stopped"}] * (4 - running)
     )
-
 
 def _serialize_snapshot(m: MetricSnapshot) -> dict[str, Any]:
     return {
@@ -242,7 +208,6 @@ def _serialize_snapshot(m: MetricSnapshot) -> dict[str, Any]:
         "collected_at": m.collected_at.isoformat() if m.collected_at else None,
     }
 
-
 def _top_cpu_features(m: MetricSnapshot) -> dict[str, float]:
     feats: dict[str, float] = {}
     if m.cpu_usage_percent is not None:
@@ -253,7 +218,6 @@ def _top_cpu_features(m: MetricSnapshot) -> dict[str, float]:
         feats["process_count"] = float(m.process_count)
     return feats
 
-
 def _top_memory_features(m: MetricSnapshot) -> dict[str, float]:
     feats: dict[str, float] = {}
     if m.memory_usage_percent is not None:
@@ -263,7 +227,6 @@ def _top_memory_features(m: MetricSnapshot) -> dict[str, float]:
     if m.memory_free_mb is not None:
         feats["memory_free_mb"] = m.memory_free_mb
     return feats
-
 
 def _top_disk_features(m: MetricSnapshot) -> dict[str, float]:
     feats: dict[str, float] = {}

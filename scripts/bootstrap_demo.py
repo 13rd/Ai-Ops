@@ -1,15 +1,8 @@
-"""One-shot demo bootstrap.
-
-Creates the demo-1 server, copies clean-1's scaler, seeds the admin user,
-and backfills ~60 normal MetricSnapshot rows so the very first
-MLAnalysisJob tick has a full window.
-"""
 from __future__ import annotations
 
 import asyncio
 import logging
 import random
-import shutil
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -19,9 +12,9 @@ from sqlalchemy import select
 from app.db.base import AsyncSessionLocal
 from app.models.metric import MetricSnapshot
 from app.models.server import Server, ServerStatus
-from data_gen.scripts.generate_clean_dataset import _normal_sample
+from data_gen.scripts.generate_clean_dataset import _normal_sample, accumulate_counters
+from ml.calibration import calibrate_from_db
 
-# Re-use seeder
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from scripts.seed_db import seed_users  # noqa: E402
 
@@ -29,10 +22,8 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger("bootstrap_demo")
 
 DEMO_NAME = "demo-1"
-SOURCE_SCALER = "clean-1.pkl"
 BACKFILL_ROWS = 60
 INTERVAL_SEC = 15
-
 
 async def _ensure_server(name: str) -> int:
     async with AsyncSessionLocal() as db:
@@ -55,21 +46,6 @@ async def _ensure_server(name: str) -> int:
             log.info("✓ %s server already present (id=%d)", name, srv.id)
         return srv.id
 
-
-def _copy_scaler() -> None:
-    src = Path("models/scalers") / SOURCE_SCALER
-    dst = Path("models/scalers") / f"{DEMO_NAME}.pkl"
-    if not src.exists():
-        raise SystemExit(
-            f"Source scaler {src} missing — run ml.train.prepare_dataset first."
-        )
-    if dst.exists():
-        log.info("✓ %s already present", dst)
-        return
-    shutil.copy2(src, dst)
-    log.info("✓ %s copied from %s", dst, src)
-
-
 async def _backfill_snapshots(server_id: int) -> None:
     async with AsyncSessionLocal() as db:
         recent = (await db.execute(
@@ -85,9 +61,11 @@ async def _backfill_snapshots(server_id: int) -> None:
         rng = random.Random(0)
         now = datetime.utcnow().replace(microsecond=0)
         disk = 220.0
+        acc: dict = {}
         for i in range(BACKFILL_ROWS, 0, -1):
             ts = now - timedelta(seconds=i * INTERVAL_SEC)
             s = _normal_sample(rng, hour=ts.hour, disk_used_gb=disk)
+            accumulate_counters(s, acc)
             db.add(MetricSnapshot(
                 server_id=server_id,
                 collected_at=ts,
@@ -115,15 +93,14 @@ async def _backfill_snapshots(server_id: int) -> None:
         await db.commit()
         log.info("✓ backfilled %d normal snapshots ending %s", BACKFILL_ROWS, now)
 
-
 async def main() -> None:
     await seed_users()
     log.info("✓ admin user ready (admin / admin123)")
     sid = await _ensure_server(DEMO_NAME)
-    _copy_scaler()
     await _backfill_snapshots(sid)
+    if await calibrate_from_db(DEMO_NAME) is None:
+        log.info("⚠ scaler not fitted — run: python -m ml.calibration %s", DEMO_NAME)
     log.info("Bootstrap complete — start backend and live simulator next.")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

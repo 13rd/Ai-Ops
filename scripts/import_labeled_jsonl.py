@@ -1,8 +1,3 @@
-"""Idempotent ingest: JSONL → metric_snapshots + anomaly_events.
-
-Usage:
-    uv run python -m scripts.import_labeled_jsonl tmp/ready/merged_dataset.jsonl
-"""
 from __future__ import annotations
 
 import argparse
@@ -23,7 +18,6 @@ from app.models.server import Server, ServerStatus
 logger = logging.getLogger(__name__)
 CHUNK = 1000
 
-
 async def _get_or_create_server(session: AsyncSession, name: str) -> Server:
     res = await session.execute(select(Server).where(Server.name == name))
     srv = res.scalar_one_or_none()
@@ -39,7 +33,6 @@ async def _get_or_create_server(session: AsyncSession, name: str) -> Server:
     session.add(srv)
     await session.flush()
     return srv
-
 
 def _snapshot_kwargs(server_id: int, row: dict) -> dict:
     containers = row.get("containers") or []
@@ -70,7 +63,6 @@ def _snapshot_kwargs(server_id: int, row: dict) -> dict:
         process_count=row.get("process_count"),
     )
 
-
 async def import_file(session: AsyncSession, path: Path) -> tuple[int, int]:
     rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
     if not rows:
@@ -86,7 +78,6 @@ async def import_file(session: AsyncSession, path: Path) -> tuple[int, int]:
         srv = await _get_or_create_server(session, hostname)
         group.sort(key=lambda r: r["timestamp"])
 
-        # Idempotency: skip timestamps already present
         existing = set(
             (await session.execute(
                 select(MetricSnapshot.collected_at).where(MetricSnapshot.server_id == srv.id)
@@ -103,7 +94,6 @@ async def import_file(session: AsyncSession, path: Path) -> tuple[int, int]:
             await session.flush()
         inserted_total += len(new_rows)
 
-        # Anomaly events: group consecutive same-type rows
         cur_type: str | None = None
         start_ts: datetime | None = None
         last_ts: datetime | None = None
@@ -127,7 +117,6 @@ async def import_file(session: AsyncSession, path: Path) -> tuple[int, int]:
     await session.commit()
     return inserted_total, events_total
 
-
 async def _maybe_insert_event(
     session: AsyncSession, server_id: int, atype: str, start_ts: datetime, end_ts: datetime
 ) -> int:
@@ -149,7 +138,6 @@ async def _maybe_insert_event(
     ))
     return 1
 
-
 async def _main(paths: list[str]) -> None:
     logging.basicConfig(level=logging.INFO)
     async with AsyncSessionLocal() as session:
@@ -159,13 +147,11 @@ async def _main(paths: list[str]) -> None:
                 ins, ev = await import_file(session, Path(p))
                 logger.info("Imported %s: %d snapshots, %d events", p, ins, ev)
 
-
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("paths", nargs="+")
     args = ap.parse_args()
     asyncio.run(_main(args.paths))
-
 
 if __name__ == "__main__":
     main()

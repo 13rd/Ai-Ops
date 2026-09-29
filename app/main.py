@@ -22,7 +22,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting application...")
@@ -36,26 +35,18 @@ async def lifespan(app: FastAPI):
     await app.state.ml_job.stop()
     await scheduler.stop()
 
-
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
 
-
 def _resolve_cors_origins() -> list[str]:
-    """Resolve allowed CORS origins.
 
-    Browsers reject wildcard origins combined with credentialed requests
-    (cookies), so when BACKEND_CORS_ORIGINS is empty or "*", fall back to
-    the explicit FRONTEND_URL.
-    """
     raw = settings.BACKEND_CORS_ORIGINS
     if not raw or raw.strip() == "*":
         return [settings.FRONTEND_URL]
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -65,7 +56,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException):
     return fail(
@@ -74,7 +64,6 @@ async def app_exception_handler(request: Request, exc: AppException):
         details=exc.details,
         status_code=exc.status_code,
     )
-
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -89,7 +78,6 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         details = None
     return fail(code=code, message=message, details=details, status_code=exc.status_code)
 
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return fail(
@@ -99,7 +87,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=422,
     )
 
-
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.error("Unhandled exception", exc_info=exc)
@@ -108,7 +95,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         message="Internal server error",
         status_code=500,
     )
-
 
 @app.get("/health")
 async def health_check():
@@ -121,9 +107,7 @@ async def health_check():
         message="OK",
     )
 
-
 app.include_router(api_router, prefix="/api/v1")
-
 
 if __name__ == "__main__":
     import uvicorn

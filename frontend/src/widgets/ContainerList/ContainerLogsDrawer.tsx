@@ -49,7 +49,9 @@ export function ContainerLogsDrawer({ open, onClose, serverId, containerId, cont
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100%', sm: 600 }, display: 'flex', flexDirection: 'column' } }}
+      slotProps={{
+        paper: { sx: { width: { xs: '100%', sm: 600 }, display: 'flex', flexDirection: 'column' } },
+      }}
     >
       <Toolbar sx={{ borderBottom: 1, borderColor: 'divider', gap: 1, flexShrink: 0 }}>
         <Typography
@@ -66,8 +68,7 @@ export function ContainerLogsDrawer({ open, onClose, serverId, containerId, cont
       <Stack
         direction="row"
         spacing={2}
-        alignItems="center"
-        sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+        sx={{ alignItems: 'center', px: 2, py: 1, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
       >
         <Select
           size="small"

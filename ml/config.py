@@ -1,4 +1,3 @@
-"""Compile-time constants for the ML pipeline."""
 from __future__ import annotations
 
 CLASSES: list[str] = [
@@ -30,10 +29,8 @@ INFER_STRIDE: int = 4
 
 _LABEL_TO_IDX = {c: i for i, c in enumerate(CLASSES)}
 
-
 def label_to_index(label: str) -> int:
     return _LABEL_TO_IDX[label]
-
 
 def index_to_label(idx: int) -> str:
     return CLASSES[idx]

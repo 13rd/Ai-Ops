@@ -12,17 +12,11 @@ from app.services.servers.connection_service import SSHConnectionService
 
 logger = logging.getLogger(__name__)
 
-
 class ContainerControlService:
-    """
-    Service for controlling containers (start, stop, restart) on remote servers.
-    """
 
     @staticmethod
     async def start_container(db: AsyncSession, server_id: int, container_id: str) -> bool:
-        """
-        Start a container on a server.
-        """
+
         server = await ContainerControlService._get_server_by_id(db, server_id)
         if not server:
             logger.error(f"Server with ID {server_id} not found")
@@ -42,9 +36,7 @@ class ContainerControlService:
 
     @staticmethod
     def _start_container_sync(client: paramiko.SSHClient, container_id: str) -> bool:
-        """
-        Synchronously start a container using SSH client.
-        """
+
         try:
             stdin, stdout, stderr = client.exec_command(f"docker start {container_id}")
             exit_status = stdout.channel.recv_exit_status()
@@ -63,9 +55,7 @@ class ContainerControlService:
 
     @staticmethod
     async def stop_container(db: AsyncSession, server_id: int, container_id: str) -> bool:
-        """
-        Stop a container on a server.
-        """
+
         server = await ContainerControlService._get_server_by_id(db, server_id)
         if not server:
             logger.error(f"Server with ID {server_id} not found")
@@ -85,9 +75,7 @@ class ContainerControlService:
 
     @staticmethod
     def _stop_container_sync(client: paramiko.SSHClient, container_id: str) -> bool:
-        """
-        Synchronously stop a container using SSH client.
-        """
+
         try:
             stdin, stdout, stderr = client.exec_command(f"docker stop {container_id}")
             exit_status = stdout.channel.recv_exit_status()
@@ -106,9 +94,7 @@ class ContainerControlService:
 
     @staticmethod
     async def restart_container(db: AsyncSession, server_id: int, container_id: str) -> bool:
-        """
-        Restart a container on a server.
-        """
+
         server = await ContainerControlService._get_server_by_id(db, server_id)
         if not server:
             logger.error(f"Server with ID {server_id} not found")
@@ -128,9 +114,7 @@ class ContainerControlService:
 
     @staticmethod
     def _restart_container_sync(client: paramiko.SSHClient, container_id: str) -> bool:
-        """
-        Synchronously restart a container using SSH client.
-        """
+
         try:
             stdin, stdout, stderr = client.exec_command(f"docker restart {container_id}")
             exit_status = stdout.channel.recv_exit_status()
@@ -151,9 +135,7 @@ class ContainerControlService:
     async def remove_container(
         db: AsyncSession, server_id: int, container_id: str, force: bool = False
     ) -> bool:
-        """
-        Remove a container on a server.
-        """
+
         server = await ContainerControlService._get_server_by_id(db, server_id)
         if not server:
             logger.error(f"Server with ID {server_id} not found")
@@ -175,9 +157,7 @@ class ContainerControlService:
     def _remove_container_sync(
         client: paramiko.SSHClient, container_id: str, force: bool = False
     ) -> bool:
-        """
-        Synchronously remove a container using SSH client.
-        """
+
         try:
             cmd = f"docker rm {'-f' if force else ''} {container_id}".strip()
             stdin, stdout, stderr = client.exec_command(cmd)
@@ -199,18 +179,15 @@ class ContainerControlService:
     async def get_container_by_id(
         db: AsyncSession, server_id: int, container_id: str
     ) -> Optional[ContainerSnapshot]:
-        """
-        Get container by ID from the latest snapshots for a server.
-        """
+
         result = await db.execute(
             select(ContainerSnapshot)
             .where(ContainerSnapshot.server_id == server_id)
             .where(
                 ContainerSnapshot.container_id.like(f"{container_id}%")
-            )  # Allow partial ID match
+            )
         )
 
-        # Return the first match (in case of partial ID match)
         containers = result.scalars().all()
 
         for container in containers:
@@ -264,8 +241,6 @@ class ContainerControlService:
 
     @staticmethod
     async def _get_server_by_id(db: AsyncSession, server_id: int) -> Optional[Server]:
-        """
-        Helper to get server by ID.
-        """
+
         result = await db.execute(select(Server).where(Server.id == server_id))
         return result.scalar_one_or_none()

@@ -1,0 +1,20 @@
+#cloud-config
+# vm-anomaly-net: 2vCPU, 4GB RAM — service_down (tc netem) scenarios
+# iperf3 is installed for optional traffic generation during service_down tests.
+package_update: true
+package_upgrade: false
+packages:
+  - stress-ng
+  - docker.io
+  - iproute2
+  - iperf3
+  - net-tools
+  - curl
+
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker ubuntu
+  - docker pull nginx:alpine
+  - docker run -d --name test-app --cap-add NET_ADMIN --restart unless-stopped -p 8080:80 nginx:alpine
+  - echo "ubuntu:testbed123" | chpasswd

@@ -1,11 +1,3 @@
-"""Continuous live-metrics injector for the demo.
-
-Every 15 s appends a fresh MetricSnapshot to the chosen server. Cycles
-through anomaly types: each event lasts ~60 s, gap ~90 s between events.
-
-Usage:
-    uv run python -m data_gen.scripts.run_live_simulator --server demo-1
-"""
 from __future__ import annotations
 
 import argparse
@@ -35,15 +27,13 @@ CYCLE = [
     "network_storm", "container_crash", "service_down",
 ]
 INTERVAL_SEC = 15
-EVENT_LEN_SEC = 60   # 4 samples
-GAP_SEC = 90          # gap between events
-
+EVENT_LEN_SEC = 60
+GAP_SEC = 90
 
 def _running_ratio(containers: list[dict]) -> float:
     if not containers:
         return 1.0
     return sum(1 for c in containers if c.get("status") == "running") / len(containers)
-
 
 async def _server_id(name: str) -> int:
     async with AsyncSessionLocal() as db:
@@ -53,7 +43,6 @@ async def _server_id(name: str) -> int:
                 f"Server '{name}' not found — run scripts.bootstrap_demo first."
             )
         return srv.id
-
 
 async def _emit(server_id: int, sample: dict, atype: str | None) -> None:
     ratio = _running_ratio(sample["containers"])
@@ -90,13 +79,12 @@ async def _emit(server_id: int, sample: dict, atype: str | None) -> None:
         sample["disk_usage_percent"], sample["network_in_bytes"] / 1000, ratio,
     )
 
-
 async def main(server_name: str) -> None:
     sid = await _server_id(server_name)
     log.info("Live simulator started for server=%s (id=%d)", server_name, sid)
     rng = random.Random()
     disk_used = 220.0
-    cur_event: tuple[float, str, float] | None = None   # (end, atype, start)
+    cur_event: tuple[float, str, float] | None = None
     cycle_idx = 0
     next_event_at = time.monotonic() + GAP_SEC
 
@@ -123,7 +111,6 @@ async def main(server_name: str) -> None:
         disk_used = min(380, max(50, disk_used + rng.gauss(0.0008, 0.003)))
         await asyncio.sleep(INTERVAL_SEC)
 
-
 def cli() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--server", default="demo-1")
@@ -132,7 +119,6 @@ def cli() -> None:
         asyncio.run(main(args.server))
     except KeyboardInterrupt:
         log.info("Stopped.")
-
 
 if __name__ == "__main__":
     cli()

@@ -1,0 +1,168 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - banner [ref=e4]:
+        - generic [ref=e5]:
+          - heading [level=6] [ref=e250]: Server Monitor
+          - button [ref=e251] [cursor=pointer]:
+            - img [ref=e8]
+          - button [ref=e252] [cursor=pointer]:
+            - generic [ref=e11]: S
+      - navigation [ref=e12]:
+        - generic [ref=e14]:
+          - heading [level=6] [ref=e253]: Server Monitor
+          - separator [ref=e17]
+          - list [ref=e18]:
+            - button [ref=e254] [cursor=pointer]:
+              - img [ref=e21]
+              - generic [ref=e24]: Dashboard
+            - button [ref=e255] [cursor=pointer]:
+              - img [ref=e27]
+              - generic [ref=e30]: Servers
+            - button [ref=e256] [cursor=pointer]:
+              - img [ref=e33]
+              - generic [ref=e36]: Anomalies
+            - button [ref=e257] [cursor=pointer]:
+              - img [ref=e39]
+              - generic [ref=e42]: Notifications
+            - button [ref=e258] [cursor=pointer]:
+              - img [ref=e45]
+              - generic [ref=e48]: Users
+            - button [ref=e259] [cursor=pointer]:
+              - img [ref=e51]
+              - generic [ref=e54]: Audit Log
+            - button [ref=e260] [cursor=pointer]:
+              - img [ref=e57]
+              - generic [ref=e60]: Reports
+      - main [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - heading [level=5] [ref=e261]: Servers
+            - generic [ref=e65]:
+              - button [ref=e262] [cursor=pointer]:
+                - img [ref=e68]
+                - text: Filters
+              - button [ref=e263] [cursor=pointer]:
+                - img [ref=e72]
+                - text: New Server
+          - generic: Environment
+          - generic: Status
+          - generic: Sort by
+          - generic: Order
+          - generic [ref=e74]:
+            - button [ref=e264] [cursor=pointer]:
+              - generic [ref=e78]:
+                - generic [ref=e79]:
+                  - heading [level=6] [ref=e265]: testbed-server-c
+                  - img [ref=e81]
+                - paragraph [ref=e83]: localhost:2223
+                - generic [ref=e86]: dev
+                - generic [ref=e87]:
+                  - generic [ref=e88]: Seen 4 hours ago
+                  - generic [ref=e89]:
+                    - img [ref=e90]
+                    - img [ref=e92]
+            - button [ref=e266] [cursor=pointer]:
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - heading [level=6] [ref=e267]: testbed-server-b
+                  - img [ref=e100]
+                - paragraph [ref=e102]: localhost:2222
+                - generic [ref=e105]: dev
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Seen 4 hours ago
+                  - generic [ref=e108]:
+                    - img [ref=e109]
+                    - img [ref=e111]
+            - button [ref=e268] [cursor=pointer]:
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - heading [level=6] [ref=e269]: testbed-server-a
+                  - img [ref=e119]
+                - paragraph [ref=e121]: localhost:2221
+                - generic [ref=e124]: dev
+                - generic [ref=e125]:
+                  - generic [ref=e126]: Seen 4 hours ago
+                  - generic [ref=e127]:
+                    - img [ref=e128]
+                    - img [ref=e130]
+            - button [ref=e270] [cursor=pointer]:
+              - generic [ref=e135]:
+                - generic [ref=e136]:
+                  - heading [level=6] [ref=e271]: test
+                  - img [ref=e138]
+                - paragraph [ref=e140]: 185.58.115.243:22
+                - generic [ref=e143]: development
+                - generic [ref=e144]:
+                  - generic [ref=e145]: Seen 4 hours ago
+                  - generic [ref=e146]:
+                    - img [ref=e147]
+                    - img [ref=e149]
+    - generic [ref=e151]:
+      - img [ref=e153]
+      - button [ref=e272] [cursor=pointer]:
+        - img [ref=e202]
+  - dialog "Add Server" [ref=e343]:
+    - heading "Add Server" [level=2] [ref=e344]
+    - generic [ref=e277]:
+      - generic [ref=e278]:
+        - generic [ref=e279]:
+          - generic [ref=e281]:
+            - generic [ref=e319]: Name
+            - generic [ref=e282]:
+              - textbox "Name" [ref=e345]: prod-web-01
+              - group:
+                - generic: Name
+          - generic [ref=e285]:
+            - generic [ref=e326]: Environment
+            - generic [ref=e286]:
+              - combobox "Environment" [active] [ref=e346] [cursor=pointer]: prod
+              - textbox: prod
+              - img
+              - group:
+                - generic: Environment
+          - generic [ref=e289]:
+            - generic [ref=e320]: Host / IP
+            - generic [ref=e290]:
+              - textbox "Host / IP" [ref=e347]: 10.0.0.100
+              - group:
+                - generic: Host / IP
+          - generic [ref=e293]:
+            - generic [ref=e294]: Port
+            - generic [ref=e295]:
+              - spinbutton "Port" [ref=e348]: "22"
+              - group:
+                - generic: Port
+          - generic [ref=e298]:
+            - generic [ref=e321]: Tags (comma-separated)
+            - generic [ref=e299]:
+              - textbox "Tags (comma-separated)" [ref=e349]:
+                - /placeholder: web, linux, nginx
+                - text: nginx, web, linux
+              - group:
+                - generic: Tags (comma-separated)
+        - separator [ref=e301]
+        - generic [ref=e302]: SSH Credentials
+        - generic [ref=e303]:
+          - generic [ref=e305]:
+            - generic: SSH Username
+            - generic [ref=e306]:
+              - textbox "SSH Username" [ref=e350]
+              - group:
+                - generic: SSH Username
+          - generic [ref=e309]:
+            - generic: SSH Password
+            - generic [ref=e310]:
+              - textbox "SSH Password" [ref=e351]
+              - group:
+                - generic: SSH Password
+          - generic [ref=e313]:
+            - generic: SSH Private Key
+            - generic [ref=e314]:
+              - textbox "SSH Private Key" [ref=e352]:
+                - /placeholder: "-----BEGIN OPENSSH PRIVATE KEY-----"
+              - group:
+                - generic: SSH Private Key
+      - generic [ref=e316]:
+        - button "Cancel" [ref=e353] [cursor=pointer]
+        - button "Create" [ref=e354] [cursor=pointer]

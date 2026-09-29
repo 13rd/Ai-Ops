@@ -1,10 +1,3 @@
-"""Generate a clean labeled JSONL dataset with strong class separation.
-
-Each anomaly type explicitly elevates the corresponding metrics far above the
-normal range, so a classifier can actually learn the discrimination signal.
-
-Output: tmp/ready/clean_dataset.jsonl  (one row per 15 s sample, ~80k rows)
-"""
 from __future__ import annotations
 
 import argparse
@@ -19,6 +12,15 @@ CLASSES_ANOM = [
     "network_storm", "container_crash", "service_down",
 ]
 
+BYTE_COUNTER_FIELDS = (
+    "disk_read_bytes", "disk_write_bytes", "network_in_bytes", "network_out_bytes",
+)
+
+def accumulate_counters(sample: dict, acc: dict) -> None:
+
+    for f in BYTE_COUNTER_FIELDS:
+        acc[f] = acc.get(f, 0) + int(sample[f])
+        sample[f] = acc[f]
 
 def _normal_sample(rng: random.Random, hour: float, disk_used_gb: float) -> dict:
     daily = 5 * math.sin(2 * math.pi * hour / 24)
@@ -35,7 +37,7 @@ def _normal_sample(rng: random.Random, hour: float, disk_used_gb: float) -> dict
         memory_used_mb=round(32_768 * mem_pct / 100, 1),
         memory_free_mb=round(32_768 * (1 - mem_pct / 100), 1),
         memory_cached_mb=round(rng.gauss(4500, 250), 1),
-        swap_used_mb=round(rng.gauss(40, 20), 1),
+        swap_used_mb=round(max(0.0, rng.gauss(40, 20)), 1),
         disk_usage_percent=round(disk_pct, 2),
         disk_used_gb=round(disk_used_gb, 2),
         disk_free_gb=round(500 - disk_used_gb, 2),
@@ -56,9 +58,8 @@ def _normal_sample(rng: random.Random, hour: float, disk_used_gb: float) -> dict
         services_summary={},
     )
 
-
 def _apply_anomaly(sample: dict, atype: str, rng: random.Random, progress: float):
-    """Elevate the relevant metric well outside normal range."""
+
     if atype == "cpu_spike":
         sample["cpu_usage_percent"] = round(rng.uniform(85.0, 99.0), 2)
         sample["load_average_1m"] = round(rng.uniform(8.5, 16.0), 2)
@@ -66,7 +67,7 @@ def _apply_anomaly(sample: dict, atype: str, rng: random.Random, progress: float
         sample["process_count"] = int(sample["process_count"] + rng.randint(30, 80))
         sample["temperature_celsius"] = round(rng.uniform(65, 82), 1)
     elif atype == "memory_leak":
-        target_pct = 55.0 + 38.0 * progress  # ramps 55% → 93%
+        target_pct = 55.0 + 38.0 * progress
         target_pct += rng.gauss(0, 1.5)
         target_pct = max(50.0, min(96.0, target_pct))
         sample["memory_usage_percent"] = round(target_pct, 2)
@@ -74,7 +75,7 @@ def _apply_anomaly(sample: dict, atype: str, rng: random.Random, progress: float
         sample["memory_free_mb"] = round(32_768 * (1 - target_pct / 100), 1)
         sample["swap_used_mb"] = round(rng.uniform(800, 2400) * progress, 1)
     elif atype == "disk_fill":
-        target_pct = 65.0 + 30.0 * progress  # ramps 65% → 95%
+        target_pct = 65.0 + 30.0 * progress
         target_pct += rng.gauss(0, 1.0)
         target_pct = max(60.0, min(97.0, target_pct))
         sample["disk_usage_percent"] = round(target_pct, 2)
@@ -93,14 +94,13 @@ def _apply_anomaly(sample: dict, atype: str, rng: random.Random, progress: float
         sample["cpu_usage_percent"] = round(sample["cpu_usage_percent"] * 0.7, 2)
     elif atype == "service_down":
         for i, c in enumerate(sample["containers"]):
-            c["status"] = "stopped" if i in (0, 1) else "running"  # web + db down
+            c["status"] = "stopped" if i in (0, 1) else "running"
         sample["cpu_usage_percent"] = round(rng.uniform(3.0, 12.0), 2)
         sample["load_average_1m"] = round(rng.uniform(0.05, 0.4), 2)
         sample["load_average_5m"] = round(rng.uniform(0.1, 0.5), 2)
         sample["network_in_bytes"] = int(rng.uniform(2_000, 25_000))
         sample["network_out_bytes"] = int(rng.uniform(1_000, 15_000))
         sample["active_connections"] = int(rng.uniform(0, 8))
-
 
 def generate_server(
     server_name: str,
@@ -114,24 +114,27 @@ def generate_server(
     total = hours * 3600 // interval
     disk_used = rng.uniform(150, 200)
 
-    # Plan anomaly events: every ~30 minutes inject one anomaly for 40-60 samples
+    type_cycle = CLASSES_ANOM[:]
+    rng.shuffle(type_cycle)
     events = []
     i = rng.randint(20, 60)
+    ev_idx = 0
     while i < total - 60:
         duration = rng.randint(40, 60)
-        atype = rng.choice(CLASSES_ANOM)
+        atype = type_cycle[ev_idx % len(type_cycle)]
+        ev_idx += 1
         events.append((i, i + duration, atype))
-        i += duration + rng.randint(60, 180)  # gap 15-45 min
+        i += duration + rng.randint(60, 180)
 
     event_iter = iter(events)
     cur_event = next(event_iter, None)
 
     rows = 0
     anom_rows = 0
+    acc: dict = {}
     for k in range(total):
         ts = start + timedelta(seconds=k * interval)
         hour = ts.hour + ts.minute / 60
-        # slow disk drift
         disk_used += rng.gauss(0.0008, 0.003)
         disk_used = max(50, min(380, disk_used))
 
@@ -147,6 +150,8 @@ def generate_server(
         elif cur_event and k >= cur_event[1]:
             cur_event = next(event_iter, None)
 
+        accumulate_counters(sample, acc)
+
         sample.update({
             "timestamp": ts.isoformat(),
             "server_name": server_name,
@@ -159,7 +164,6 @@ def generate_server(
         out_fh.write(json.dumps(sample) + "\n")
         rows += 1
     return rows, anom_rows
-
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -184,7 +188,6 @@ def main() -> None:
             total_anom += a
     print(f"Total: {total_rows} rows ({total_anom} anomalous, "
           f"{total_anom / total_rows:.1%})")
-
 
 if __name__ == "__main__":
     main()

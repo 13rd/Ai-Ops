@@ -1,0 +1,18 @@
+#cloud-config
+# vm-normal-1: 2vCPU, 4GB RAM — normal load only (24/7 baseline)
+package_update: true
+package_upgrade: false
+packages:
+  - stress-ng
+  - docker.io
+  - iproute2
+  - net-tools
+  - curl
+
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker ubuntu
+  - docker pull nginx:alpine
+  - docker run -d --name test-app --restart unless-stopped -p 8080:80 nginx:alpine
+  - echo "ubuntu:testbed123" | chpasswd

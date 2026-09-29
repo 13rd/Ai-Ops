@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from datetime import datetime
 from typing import Dict, Optional
 
 import paramiko
@@ -14,24 +13,15 @@ from app.services.servers.connection_service import (
 
 logger = logging.getLogger(__name__)
 
-
 class MetricsCollector:
-    """
-    Collector for system metrics from remote servers.
-    Uses SSH to execute commands and parse output.
-    """
 
     @staticmethod
     async def collect_metrics(server: Server) -> Optional[MetricSnapshotBase]:
-        """
-        Collect all system metrics from server.
-        Returns MetricSnapshotBase or None if collection fails.
-        """
+
         try:
             client = await SSHConnectionService.get_ssh_client(server)
 
-            # Run collection in thread pool
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             metrics = await loop.run_in_executor(
                 None,
                 MetricsCollector._collect_metrics_sync,
@@ -50,25 +40,20 @@ class MetricsCollector:
 
     @staticmethod
     def _collect_metrics_sync(client: paramiko.SSHClient) -> MetricSnapshotBase:
-        """
-        Synchronously collect metrics using SSH client.
-        """
+
         metrics = MetricSnapshotBase()
 
         try:
-            # CPU usage
             cpu_usage = MetricsCollector._get_cpu_usage(client)
             if cpu_usage is not None:
                 metrics.cpu_usage_percent = cpu_usage
 
-            # Load average
             load_avg = MetricsCollector._get_load_average(client)
             if load_avg:
                 metrics.load_average_1m = load_avg.get("1m")
                 metrics.load_average_5m = load_avg.get("5m")
                 metrics.load_average_15m = load_avg.get("15m")
 
-            # Memory
             memory = MetricsCollector._get_memory_info(client)
             if memory:
                 metrics.memory_total_mb = memory.get("total")
@@ -76,7 +61,6 @@ class MetricsCollector:
                 metrics.memory_free_mb = memory.get("free")
                 metrics.memory_usage_percent = memory.get("percent")
 
-            # Disk
             disk = MetricsCollector._get_disk_info(client)
             if disk:
                 metrics.disk_total_gb = disk.get("total")
@@ -84,29 +68,24 @@ class MetricsCollector:
                 metrics.disk_free_gb = disk.get("free")
                 metrics.disk_usage_percent = disk.get("percent")
 
-            # Network
             network = MetricsCollector._get_network_info(client)
             if network:
                 metrics.network_in_bytes = network.get("in")
                 metrics.network_out_bytes = network.get("out")
 
-            # Uptime
             uptime = MetricsCollector._get_uptime(client)
             if uptime is not None:
                 metrics.uptime_seconds = uptime
 
-            # Disk I/O
             disk_io = MetricsCollector._get_disk_io_info(client)
             if disk_io:
                 metrics.disk_read_bytes = disk_io.get("read_bytes")
                 metrics.disk_write_bytes = disk_io.get("written_bytes")
 
-            # Process count
             process_info = MetricsCollector._get_process_info(client)
             if process_info:
                 metrics.process_count = process_info.get("total")
 
-            # Active network connections
             try:
                 netstat_output = MetricsCollector._execute_command(
                     client, "netstat -an | grep ESTABLISHED | wc -l"
@@ -115,29 +94,34 @@ class MetricsCollector:
             except Exception as e:
                 logger.warning(f"Failed to get active connections: {e}")
 
+            containers_ratio = MetricsCollector._get_containers_ratio(client)
+            if containers_ratio >= 0:
+                metrics.extra_data = metrics.extra_data or {}
+                metrics.extra_data["containers_running_ratio"] = containers_ratio
+
         except Exception as e:
             logger.error(f"Error collecting specific metrics: {e}")
 
         return metrics
 
     @staticmethod
-    def _execute_command(client: paramiko.SSHClient, command: str) -> str:
-        """
-        Execute command and return output.
-        """
-        stdin, stdout, stderr = client.exec_command(command)
+    def _execute_command(client: paramiko.SSHClient, command: str, timeout: int = 10) -> str:
+
+        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
         return stdout.read().decode().strip()
 
     @staticmethod
     def _get_cpu_usage(client: paramiko.SSHClient) -> Optional[float]:
-        """
-        Get CPU usage percentage.
-        """
+
         try:
-            # Use top command to get CPU usage
             output = MetricsCollector._execute_command(
                 client,
-                "top -bn1 | grep 'Cpu(s)' | sed 's/.*, *\\([0-9.]*\\)%* id.*/\\1/' | awk '{print 100 - $1}'",
+                "S1=$(grep '^cpu ' /proc/stat); sleep 0.5; S2=$(grep '^cpu ' /proc/stat); "
+                "echo \"$S1|$S2\" | awk -F'|' '{n=split($1,a,\" \"); split($2,b,\" \"); "
+                "i1=a[5];t1=0;for(k=2;k<=n;k++)t1+=a[k]; "
+                "i2=b[5];t2=0;for(k=2;k<=n;k++)t2+=b[k]; "
+                "dt=t2-t1; di=i2-i1; if(dt>0) printf \"%.1f\", 100*(dt-di)/dt; else printf \"0\"}'",
+                timeout=15,
             )
             return float(output)
         except Exception as e:
@@ -146,9 +130,7 @@ class MetricsCollector:
 
     @staticmethod
     def _get_load_average(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
-        """
-        Get load average (1m, 5m, 15m).
-        """
+
         try:
             output = MetricsCollector._execute_command(client, "cat /proc/loadavg")
             parts = output.split()
@@ -163,9 +145,7 @@ class MetricsCollector:
 
     @staticmethod
     def _get_memory_info(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
-        """
-        Get memory information in MB.
-        """
+
         try:
             output = MetricsCollector._execute_command(client, "free -m | grep Mem")
             parts = output.split()
@@ -186,9 +166,7 @@ class MetricsCollector:
 
     @staticmethod
     def _get_disk_info(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
-        """
-        Get disk information in GB for root partition.
-        """
+
         try:
             output = MetricsCollector._execute_command(client, "df -BG / | tail -1")
             parts = output.split()
@@ -209,16 +187,12 @@ class MetricsCollector:
 
     @staticmethod
     def _get_network_info(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
-        """
-        Get network bytes in/out.
-        """
+
         try:
-            # Get network interfaces stats
             output = MetricsCollector._execute_command(
                 client, "cat /proc/net/dev | grep -E 'eth[0-9]|ens[0-9]+|enp[0-9]+s[0-9]+'"
             )
             if not output:
-                # Try to get at least some interface if specific patterns don't match
                 output = MetricsCollector._execute_command(
                     client, "cat /proc/net/dev | grep -v -E 'Inter|face'"
                 )
@@ -232,8 +206,8 @@ class MetricsCollector:
                     parts = line.split()
                     if len(parts) >= 10:
                         try:
-                            bytes_in = float(parts[1])  # RX bytes
-                            bytes_out = float(parts[9])  # TX bytes
+                            bytes_in = float(parts[1])
+                            bytes_out = float(parts[9])
                             total_in += bytes_in
                             total_out += bytes_out
                         except (ValueError, IndexError):
@@ -252,9 +226,7 @@ class MetricsCollector:
 
     @staticmethod
     def _get_disk_io_info(client: paramiko.SSHClient) -> Optional[Dict[str, float]]:
-        """
-        Get disk I/O statistics.
-        """
+
         try:
             output = MetricsCollector._execute_command(client, "cat /proc/diskstats")
             lines = output.strip().split("\n")
@@ -268,7 +240,6 @@ class MetricsCollector:
                 parts = line.split()
                 if len(parts) >= 14:
                     try:
-                        # Skip RAM disks and partitions
                         device_name = parts[2]
                         if (
                             device_name.startswith("ram")
@@ -277,11 +248,9 @@ class MetricsCollector:
                         ):
                             continue
 
-                        # Read operations
                         reads_completed = int(parts[3])
                         sectors_read = int(parts[5])
 
-                        # Write operations
                         writes_completed = int(parts[7])
                         sectors_written = int(parts[9])
 
@@ -289,7 +258,7 @@ class MetricsCollector:
                         total_writes += writes_completed
                         total_read_bytes += (
                             sectors_read * 512
-                        )  # Convert sectors to bytes (512 bytes per sector)
+                        )
                         total_written_bytes += sectors_written * 512
 
                     except (ValueError, IndexError):
@@ -309,18 +278,13 @@ class MetricsCollector:
 
     @staticmethod
     def _get_process_info(client: paramiko.SSHClient) -> Optional[Dict[str, int]]:
-        """
-        Get process count information.
-        """
+
         try:
-            # Get total number of processes
             total_processes = int(MetricsCollector._execute_command(client, "ps ax | wc -l"))
-            # Subtract 1 for header line
             total_processes -= 1
 
-            # Get number of running processes
             running_processes = int(MetricsCollector._execute_command(client, "ps r | wc -l"))
-            running_processes -= 1  # Subtract 1 for header line
+            running_processes -= 1
 
             return {
                 "total": total_processes,
@@ -332,9 +296,7 @@ class MetricsCollector:
 
     @staticmethod
     def _get_uptime(client: paramiko.SSHClient) -> Optional[int]:
-        """
-        Get system uptime in seconds.
-        """
+
         try:
             output = MetricsCollector._execute_command(
                 client, "cat /proc/uptime | awk '{print $1}'"
@@ -343,3 +305,22 @@ class MetricsCollector:
         except Exception as e:
             logger.warning(f"Failed to get uptime: {e}")
             return None
+
+    @staticmethod
+    def _get_containers_ratio(client: paramiko.SSHClient) -> float:
+
+        try:
+            total_out = MetricsCollector._execute_command(
+                client, "docker ps -a --format '{{.Names}}' 2>/dev/null | wc -l"
+            )
+            running_out = MetricsCollector._execute_command(
+                client, "docker ps --format '{{.Names}}' 2>/dev/null | wc -l"
+            )
+            total = int(total_out.strip())
+            running = int(running_out.strip())
+            if total == 0:
+                return 1.0
+            return running / total
+        except Exception as e:
+            logger.warning(f"Failed to get containers ratio: {e}")
+            return -1.0

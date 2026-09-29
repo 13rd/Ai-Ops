@@ -1,18 +1,21 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy import select
-
-from app.core.deps import get_current_user, require_admin
-from app.models.user import UserRole
-from app.models.user_server_access import UserServerAccess
+from app.core.deps import (
+    assert_server_read_access,
+    get_accessible_server_ids,
+    get_current_user,
+    require_admin,
+)
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.responses import ok, paginated
 from app.db.base import get_db
 from app.models.audit_log import AuditAction
-from app.models.user import User
+from app.models.user import User, UserRole
+from app.models.user_server_access import UserServerAccess
 from app.schemas.server import ServerCreate, ServerResponse, ServerUpdate
 from app.services.audit.logger import AuditLogger
 from app.services.servers.server_service import ServerService
@@ -21,7 +24,6 @@ router = APIRouter()
 
 VALID_SORT_FIELDS = {"created_at", "name", "cpu_usage", "memory_usage", "last_seen"}
 VALID_SORT_ORDERS = {"asc", "desc"}
-
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_server(
@@ -44,7 +46,6 @@ async def create_server(
         data=ServerResponse.model_validate(server).model_dump(),
         message="Server created successfully",
     )
-
 
 @router.get("")
 async def list_servers(
@@ -69,6 +70,7 @@ async def list_servers(
             code="invalid_sort_order",
         )
 
+    allowed_server_ids = await get_accessible_server_ids(db, current_user)
     servers, total = await ServerService.get_servers_with_count(
         db,
         skip=skip,
@@ -78,6 +80,7 @@ async def list_servers(
         tags=tags,
         sort_by=sort_by,
         sort_order=sort_order,
+        allowed_server_ids=allowed_server_ids,
     )
     return paginated(
         items=[ServerResponse.model_validate(s).model_dump() for s in servers],
@@ -86,7 +89,6 @@ async def list_servers(
         total=total,
         message="Servers retrieved successfully",
     )
-
 
 @router.get("/{server_id}")
 async def get_server(
@@ -97,11 +99,11 @@ async def get_server(
     server = await ServerService.get_server_by_id(db, server_id)
     if not server:
         raise NotFoundError("Server not found")
+    await assert_server_read_access(db, current_user, server_id)
     return ok(
         data=ServerResponse.model_validate(server).model_dump(),
         message="Server retrieved successfully",
     )
-
 
 @router.put("/{server_id}")
 async def update_server(
@@ -130,7 +132,6 @@ async def update_server(
         message="Server updated successfully",
     )
 
-
 @router.delete("/{server_id}")
 async def delete_server(
     server_id: int,
@@ -150,7 +151,6 @@ async def delete_server(
         request=request,
     )
     return ok(data={"server_id": server_id}, message="Server deleted successfully")
-
 
 @router.get("/{server_id}/my-access")
 async def get_my_server_access(

@@ -1,4 +1,3 @@
-"""Resolve all (or per-server) open anomalies so dedup unblocks."""
 from __future__ import annotations
 
 import argparse
@@ -10,7 +9,6 @@ from sqlalchemy import func, select, update
 from app.db.base import AsyncSessionLocal
 from app.models.anomaly import Anomaly, AnomalyStatus
 from app.models.server import Server
-
 
 async def main(server_name: str | None) -> None:
     async with AsyncSessionLocal() as db:
@@ -37,7 +35,6 @@ async def main(server_name: str | None) -> None:
         )
         await db.commit()
         print("✓ done")
-
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()

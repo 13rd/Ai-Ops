@@ -1,0 +1,106 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - banner [ref=e107]:
+        - generic [ref=e108]:
+          - heading "Server Monitor" [level=6] [ref=e109]
+          - button "Notifications" [ref=e110] [cursor=pointer]:
+            - img [ref=e111]
+          - button "smoke_phase0_user" [ref=e113] [cursor=pointer]:
+            - generic [ref=e114]: S
+      - navigation [ref=e115]:
+        - generic [ref=e117]:
+          - heading "Server Monitor" [level=6] [ref=e119]
+          - separator [ref=e120]
+          - list [ref=e121]:
+            - button "Dashboard" [ref=e122] [cursor=pointer]:
+              - img [ref=e124]
+              - generic [ref=e127]: Dashboard
+            - button "Servers" [ref=e128] [cursor=pointer]:
+              - img [ref=e130]
+              - generic [ref=e133]: Servers
+            - button "Anomalies" [ref=e134] [cursor=pointer]:
+              - img [ref=e136]
+              - generic [ref=e139]: Anomalies
+            - button "Notifications" [ref=e140] [cursor=pointer]:
+              - img [ref=e142]
+              - generic [ref=e145]: Notifications
+            - button "Users" [ref=e146] [cursor=pointer]:
+              - img [ref=e148]
+              - generic [ref=e151]: Users
+            - button "Audit Log" [ref=e152] [cursor=pointer]:
+              - img [ref=e154]
+              - generic [ref=e157]: Audit Log
+            - button "Reports" [ref=e158] [cursor=pointer]:
+              - img [ref=e160]
+              - generic [ref=e163]: Reports
+      - main [ref=e164]:
+        - generic [ref=e165]:
+          - button "Servers" [ref=e167] [cursor=pointer]:
+            - img [ref=e169]
+            - text: Servers
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - generic [ref=e173]:
+                - heading "testbed-server-a" [level=5] [ref=e174]
+                - img [ref=e175]
+                - paragraph [ref=e177]: online
+              - paragraph [ref=e178]: localhost:2221
+            - generic [ref=e179]:
+              - button "Test" [ref=e180] [cursor=pointer]:
+                - img [ref=e182]
+                - text: Test
+              - button "Console" [ref=e184] [cursor=pointer]:
+                - img [ref=e186]
+                - text: Console
+              - button "Edit" [ref=e188] [cursor=pointer]:
+                - img [ref=e190]
+                - text: Edit
+              - button "Delete" [ref=e192] [cursor=pointer]:
+                - img [ref=e194]
+                - text: Delete
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - text: Environment
+              - paragraph [ref=e199]: dev
+            - generic [ref=e200]:
+              - text: Last seen
+              - paragraph [ref=e201]: 4 hours ago
+            - generic [ref=e202]:
+              - text: Created
+              - paragraph [ref=e203]: 2026-05-16 20:42
+            - generic [ref=e204]:
+              - text: Tags
+              - paragraph [ref=e206]: —
+          - tablist [ref=e209]:
+            - tab "Overview" [selected] [ref=e210] [cursor=pointer]
+            - tab "Anomalies" [ref=e211] [cursor=pointer]
+            - tab "Audit" [ref=e212] [cursor=pointer]
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - heading "Metrics" [level=6] [ref=e217]
+              - group [ref=e218]:
+                - button "1h" [ref=e219] [cursor=pointer]
+                - button "24h" [active] [ref=e220] [cursor=pointer]: 24h
+                - button "7d" [ref=e221] [cursor=pointer]
+                - button "30d" [ref=e222] [cursor=pointer]
+            - generic [ref=e223]:
+              - generic [ref=e226]:
+                - generic [ref=e227]: CPU Usage (%)
+                - generic [ref=e394]: No data for this period
+              - generic [ref=e270]:
+                - generic [ref=e271]: Memory Usage (%)
+                - generic [ref=e396]: No data for this period
+              - generic [ref=e311]:
+                - generic [ref=e312]: Disk Usage (%)
+                - generic [ref=e398]: No data for this period
+              - generic [ref=e351]:
+                - generic [ref=e352]: Network In (B/s)
+                - generic [ref=e400]: No data for this period
+            - separator [ref=e389]
+            - paragraph [ref=e391]: Container list — available in Phase 5
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button "Open Tanstack query devtools" [ref=e57] [cursor=pointer]:
+        - img [ref=e58]
+  - generic [ref=e392]: "0"

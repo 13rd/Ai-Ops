@@ -1,0 +1,32 @@
+[
+  {
+    "server_id": 4,
+    "name": "testbed-server-a",
+    "host": "localhost",
+    "port": 2221,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-a",
+    "scenario_focus": "normal_cpu"
+  },
+  {
+    "server_id": 5,
+    "name": "testbed-server-b",
+    "host": "localhost",
+    "port": 2222,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-b",
+    "scenario_focus": "memory_crash"
+  },
+  {
+    "server_id": 6,
+    "name": "testbed-server-c",
+    "host": "localhost",
+    "port": 2223,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-c",
+    "scenario_focus": "service_down"
+  }
+]

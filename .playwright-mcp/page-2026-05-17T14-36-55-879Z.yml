@@ -1,0 +1,46 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e131]:
+      - banner [ref=e132]:
+        - generic [ref=e133]:
+          - heading [level=6] [ref=e194]: Server Monitor
+          - button [ref=e195] [cursor=pointer]:
+            - img [ref=e139]
+          - button [ref=e196] [cursor=pointer]:
+            - generic [ref=e142]: S
+      - navigation [ref=e145]:
+        - generic [ref=e147]:
+          - heading [level=6] [ref=e197]: Server Monitor
+          - separator [ref=e150]
+          - list [ref=e151]:
+            - button [ref=e198] [cursor=pointer]:
+              - img [ref=e154]
+              - generic [ref=e157]: Dashboard
+            - button [ref=e199] [cursor=pointer]:
+              - img [ref=e160]
+              - generic [ref=e163]: Servers
+            - button [ref=e200] [cursor=pointer]:
+              - img [ref=e166]
+              - generic [ref=e169]: Anomalies
+            - button [ref=e201] [cursor=pointer]:
+              - img [ref=e172]
+              - generic [ref=e175]: Notifications
+            - button [ref=e202] [cursor=pointer]:
+              - img [ref=e178]
+              - generic [ref=e181]: Users
+            - button [ref=e203] [cursor=pointer]:
+              - img [ref=e184]
+              - generic [ref=e187]: Audit Log
+            - button [ref=e204] [cursor=pointer]:
+              - img [ref=e190]
+              - generic [ref=e193]: Reports
+      - main [ref=e143]:
+        - heading [level=5] [ref=e205]: Dashboard
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button [ref=e206] [cursor=pointer]:
+        - img [ref=e58]
+  - menu [ref=e209]:
+    - menuitem "Profile" [active] [ref=e210] [cursor=pointer]: Profile
+    - separator [ref=e211]
+    - menuitem "Logout" [ref=e212] [cursor=pointer]

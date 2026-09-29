@@ -1,0 +1,41 @@
+- generic [ref=e2]:
+  - generic [ref=e122]:
+    - banner [ref=e123]:
+      - generic [ref=e124]:
+        - heading "Server Monitor" [level=6] [ref=e125]
+        - button "Notifications" [ref=e126] [cursor=pointer]:
+          - img [ref=e127]
+        - button "admin" [ref=e129] [cursor=pointer]:
+          - generic [ref=e130]: A
+    - navigation [ref=e131]:
+      - generic [ref=e133]:
+        - heading "Server Monitor" [level=6] [ref=e135]
+        - separator [ref=e136]
+        - list [ref=e137]:
+          - button "Dashboard" [ref=e138] [cursor=pointer]:
+            - img [ref=e140]
+            - generic [ref=e143]: Dashboard
+          - button "Servers" [ref=e144] [cursor=pointer]:
+            - img [ref=e146]
+            - generic [ref=e149]: Servers
+          - button "Anomalies" [ref=e150] [cursor=pointer]:
+            - img [ref=e152]
+            - generic [ref=e155]: Anomalies
+          - button "Notifications" [ref=e156] [cursor=pointer]:
+            - img [ref=e158]
+            - generic [ref=e161]: Notifications
+          - button "Users" [ref=e162] [cursor=pointer]:
+            - img [ref=e164]
+            - generic [ref=e167]: Users
+          - button "Audit Log" [ref=e168] [cursor=pointer]:
+            - img [ref=e170]
+            - generic [ref=e173]: Audit Log
+          - button "Reports" [ref=e174] [cursor=pointer]:
+            - img [ref=e176]
+            - generic [ref=e179]: Reports
+    - main [ref=e180]:
+      - heading "Dashboard" [level=5] [ref=e181]
+  - generic [ref=e23]:
+    - img [ref=e25]
+    - button "Open Tanstack query devtools" [ref=e73] [cursor=pointer]:
+      - img [ref=e74]

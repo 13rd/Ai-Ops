@@ -1,25 +1,18 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
+from app.core.secrets import get_secrets_manager
 from app.models.server import Server, ServerStatus
 from app.schemas.server import ServerCreate, ServerUpdate
 
-
 class ServerService:
-    """
-    Service for server management operations.
-    """
 
     @staticmethod
     async def create_server(db: AsyncSession, server_data: ServerCreate) -> Server:
-        """
-        Create a new server.
-        """
-        # TODO: Encrypt credentials before storing
+        secrets = get_secrets_manager()
         server = Server(
             name=server_data.name,
             host=server_data.host,
@@ -28,8 +21,8 @@ class ServerService:
             environment=server_data.environment,
             tags=server_data.tags,
             ssh_username=server_data.ssh_username,
-            ssh_password=server_data.ssh_password,
-            ssh_private_key=server_data.ssh_private_key,
+            ssh_password=secrets.encrypt_if_needed(server_data.ssh_password),
+            ssh_private_key=secrets.encrypt_if_needed(server_data.ssh_private_key),
             status=ServerStatus.OFFLINE,
         )
 
@@ -41,9 +34,6 @@ class ServerService:
 
     @staticmethod
     async def get_server_by_id(db: AsyncSession, server_id: int) -> Optional[Server]:
-        """
-        Get server by ID.
-        """
         result = await db.execute(select(Server).where(Server.id == server_id))
         return result.scalar_one_or_none()
 
@@ -57,35 +47,20 @@ class ServerService:
         tags: Optional[str] = None,
         sort_by: Optional[str] = "created_at",
         sort_order: Optional[str] = "desc",
+        allowed_server_ids: Optional[set[int]] = None,
     ) -> List[Server]:
-        """
-        Get list of servers with optional filters and sorting.
-        """
         query = select(Server)
 
-        # Apply filters
         if environment:
             query = query.where(Server.environment == environment)
-
         if status:
             query = query.where(Server.status == status)
-
         if tags:
-            # Simple tag filtering: check if the tag exists in the JSON array representation
-            # This works with the JSON format stored in the database
-            from sqlalchemy import text
-
-            # Format the tag to match how it appears in the JSON array
             query = query.where(Server.tags.like(f'%"{tags}"%'))
 
-        # Apply sorting
         if sort_by == "name":
-            if sort_order == "asc":
-                query = query.order_by(Server.name.asc())
-            else:
-                query = query.order_by(Server.name.desc())
+            query = query.order_by(Server.name.asc() if sort_order == "asc" else Server.name.desc())
         elif sort_by == "cpu_usage":
-            # For CPU usage, we need to join with metrics
             from app.models.metric import MetricSnapshot
 
             query = (
@@ -94,7 +69,6 @@ class ServerService:
                 .order_by(func.coalesce(MetricSnapshot.cpu_usage_percent, 0).desc())
             )
         elif sort_by == "memory_usage":
-            # For memory usage, we need to join with metrics
             from app.models.metric import MetricSnapshot
 
             query = (
@@ -103,33 +77,77 @@ class ServerService:
                 .order_by(func.coalesce(MetricSnapshot.memory_usage_percent, 0).desc())
             )
         elif sort_by == "last_seen":
-            if sort_order == "asc":
-                query = query.order_by(Server.last_seen.asc())
-            else:
-                query = query.order_by(Server.last_seen.desc())
-        else:  # default to created_at
-            if sort_order == "asc":
-                query = query.order_by(Server.created_at.asc())
-            else:
-                query = query.order_by(Server.created_at.desc())
+            query = query.order_by(
+                Server.last_seen.asc() if sort_order == "asc" else Server.last_seen.desc()
+            )
+        else:
+            query = query.order_by(
+                Server.created_at.asc() if sort_order == "asc" else Server.created_at.desc()
+            )
+
+        if allowed_server_ids is not None:
+            query = query.where(Server.id.in_(allowed_server_ids))
 
         query = query.offset(skip).limit(limit)
-
         result = await db.execute(query)
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_servers_with_count(
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 100,
+        environment: Optional[str] = None,
+        status: Optional[str] = None,
+        tags: Optional[str] = None,
+        sort_by: Optional[str] = "created_at",
+        sort_order: Optional[str] = "desc",
+        allowed_server_ids: Optional[set[int]] = None,
+    ):
+        total = await ServerService.count_servers(
+            db, environment=environment, status=status, tags=tags,
+            allowed_server_ids=allowed_server_ids,
+        )
+        servers = await ServerService.get_servers(
+            db, skip=skip, limit=limit, environment=environment, status=status,
+            tags=tags, sort_by=sort_by, sort_order=sort_order,
+            allowed_server_ids=allowed_server_ids,
+        )
+        return servers, total
+
+    @staticmethod
+    async def count_servers(
+        db: AsyncSession,
+        environment: Optional[str] = None,
+        status: Optional[str] = None,
+        tags: Optional[str] = None,
+        allowed_server_ids: Optional[set[int]] = None,
+    ) -> int:
+        query = select(func.count()).select_from(Server)
+        if allowed_server_ids is not None:
+            query = query.where(Server.id.in_(allowed_server_ids))
+        if environment:
+            query = query.where(Server.environment == environment)
+        if status:
+            query = query.where(Server.status == status)
+        if tags:
+            query = query.where(Server.tags.like(f'%"{tags}"%'))
+        result = await db.execute(query)
+        return int(result.scalar_one())
 
     @staticmethod
     async def update_server(
         db: AsyncSession, server_id: int, server_data: ServerUpdate
     ) -> Optional[Server]:
-        """
-        Update server information.
-        """
         server = await ServerService.get_server_by_id(db, server_id)
         if not server:
             return None
 
         update_data = server_data.model_dump(exclude_unset=True)
+        secrets = get_secrets_manager()
+        for field in ("ssh_password", "ssh_private_key"):
+            if field in update_data:
+                update_data[field] = secrets.encrypt_if_needed(update_data[field])
 
         for field, value in update_data.items():
             setattr(server, field, value)
@@ -143,30 +161,23 @@ class ServerService:
 
     @staticmethod
     async def delete_server(db: AsyncSession, server_id: int) -> bool:
-        """
-        Delete server by ID.
-        Returns True if deleted, False if not found.
-        """
         result = await db.execute(delete(Server).where(Server.id == server_id))
         await db.commit()
         return result.rowcount > 0
 
     @staticmethod
     async def update_server_status(
-        db: AsyncSession, server_id: int, status: ServerStatus, last_seen: datetime = None
+        db: AsyncSession,
+        server_id: int,
+        status: ServerStatus,
+        last_seen: Optional[datetime] = None,
     ) -> Optional[Server]:
-        """
-        Update server status and last_seen timestamp.
-        """
         server = await ServerService.get_server_by_id(db, server_id)
         if not server:
             return None
 
         server.status = status
-        if last_seen:
-            server.last_seen = last_seen
-        else:
-            server.last_seen = datetime.utcnow()
+        server.last_seen = last_seen or datetime.utcnow()
 
         await db.commit()
         await db.refresh(server)

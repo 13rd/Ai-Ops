@@ -1,8 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
-
 
 class MetricSnapshotBase(BaseModel):
     cpu_usage_percent: Optional[float] = None
@@ -24,7 +23,7 @@ class MetricSnapshotBase(BaseModel):
     disk_write_bytes: Optional[float] = None
     process_count: Optional[int] = None
     active_connections: Optional[int] = None
-
+    extra_data: Optional[Dict[str, Any]] = None
 
 class MetricSnapshotResponse(MetricSnapshotBase):
     id: int

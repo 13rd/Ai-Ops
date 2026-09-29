@@ -1,4 +1,3 @@
-"""Process-singleton wrapper around ml.registry for FastAPI lifespan."""
 from __future__ import annotations
 
 import logging
@@ -11,13 +10,11 @@ logger = logging.getLogger(__name__)
 
 _registry: ModelRegistry | None = None
 
-
 def get_registry() -> ModelRegistry:
     global _registry
     if _registry is None:
         _registry = ModelRegistry(models_dir=Path(settings.ML_MODELS_DIR))
     return _registry
-
 
 def warmup() -> None:
     try:

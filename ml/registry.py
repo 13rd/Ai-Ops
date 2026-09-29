@@ -1,7 +1,3 @@
-"""Pure ModelRegistry — no FastAPI dependency.
-
-Safe to import from training scripts and tests.
-"""
 from __future__ import annotations
 
 import json
@@ -14,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow import keras
 
 logger = logging.getLogger(__name__)
-
 
 class ModelRegistry:
     def __init__(self, models_dir: Path | str, scalers_dir: Path | str | None = None):
@@ -67,12 +62,7 @@ class ModelRegistry:
         return sc
 
     def get_threshold(self, server_name: str) -> tuple[float, float, float]:
-        """Return (threshold, mean, std) for the given server.
 
-        Uses a per-server threshold file when one exists (written by
-        scaler_calibration); falls back to the global threshold from
-        threshold.json so training-data servers are unaffected.
-        """
         if server_name in self._threshold_cache:
             t = self._threshold_cache[server_name]
             return t["threshold"], t["mean"], t["std"]
@@ -84,14 +74,7 @@ class ModelRegistry:
         return self.threshold, self.threshold_mean, self.threshold_std
 
     def get_per_feature_thresholds(self, server_name: str) -> np.ndarray | None:
-        """Return per-feature threshold array (shape 10,) or None if not calibrated.
 
-        Thresholds are computed as mean + 3*std of the per-feature reconstruction
-        error on clean calibration windows. When available they allow detecting
-        anomalies in individual metrics (memory, disk, network) without requiring
-        a single global error that exceeds the overall threshold — which can be
-        dominated by a mis-calibrated feature (e.g. cpu scale_=1.0).
-        """
         if server_name not in self._threshold_cache:
             p = self.scalers_dir / f"{server_name}_threshold.json"
             if p.exists():
@@ -103,7 +86,7 @@ class ModelRegistry:
         return np.array(t["per_feature"]["threshold"], dtype=np.float32)
 
     def deep_explainer(self):
-        """Lazy-init SHAP DeepExplainer; returns None on failure."""
+
         if self._deep_explainer is not None:
             return self._deep_explainer
         if self.classifier is None or self.background is None:

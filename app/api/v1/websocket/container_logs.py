@@ -1,20 +1,3 @@
-"""WebSocket endpoint for streaming Docker container logs.
-
-Protocol (server → client JSON messages):
-  {"type": "log",    "data": "<log line>"}
-  {"type": "error",  "data": "<human-readable error>"}
-  {"type": "closed", "data": "<reason>"}
-
-Query params:
-  token — JWT access token
-  tail  — number of historical lines to show on connect (default 50, max 2000)
-
-Close codes:
-  4401 — invalid/missing JWT
-  4403 — no write access to this server
-  4404 — server not found
-  4500 — SSH connection failed
-"""
 from __future__ import annotations
 
 import asyncio
@@ -44,7 +27,6 @@ WS_CLOSE_SSH_FAILED = 4500
 
 _SENTINEL = object()
 
-
 async def _resolve_user(db: AsyncSession, token: str):
     payload = decode_access_token(token)
     if payload is None:
@@ -57,7 +39,6 @@ async def _resolve_user(db: AsyncSession, token: str):
     if user is None or not user.is_active:
         return None
     return user
-
 
 async def _has_write_access(db: AsyncSession, user: User, server_id: int) -> bool:
     if user.role == UserRole.ADMIN.value:
@@ -72,13 +53,11 @@ async def _has_write_access(db: AsyncSession, user: User, server_id: int) -> boo
     ).scalar_one_or_none()
     return row is not None and row.permission == ServerPermission.WRITE.value
 
-
 async def _send(ws: WebSocket, msg: dict) -> None:
     try:
         await ws.send_text(json.dumps(msg))
     except Exception:
         pass
-
 
 async def _close(ws: WebSocket, code: int, reason: str) -> None:
     await _send(ws, {"type": "error", "data": reason})
@@ -86,7 +65,6 @@ async def _close(ws: WebSocket, code: int, reason: str) -> None:
         await ws.close(code=code)
     except Exception:
         pass
-
 
 def _stream_logs_thread(
     client: paramiko.SSHClient,
@@ -113,7 +91,6 @@ def _stream_logs_thread(
             client.close()
         except Exception:
             pass
-
 
 @router.websocket("/ws/servers/{server_id}/containers/{container_id}/logs")
 async def container_logs_endpoint(

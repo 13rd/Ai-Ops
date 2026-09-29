@@ -1,4 +1,3 @@
-"""Periodic ML analysis job — iterates active servers each interval."""
 from __future__ import annotations
 
 import asyncio
@@ -10,9 +9,10 @@ from app.core.config import settings
 from app.db.base import AsyncSessionLocal
 from app.models.server import Server, ServerStatus
 from app.services.ml.pipeline import MLPipeline
+from app.services.ml.registry import get_registry
+from app.services.ml.scaler_calibration import calibrate_if_needed
 
 logger = logging.getLogger(__name__)
-
 
 class MLAnalysisJob:
     def __init__(self):
@@ -54,8 +54,11 @@ class MLAnalysisJob:
             srvs = (await session.execute(
                 select(Server).where(Server.status == ServerStatus.ONLINE.value)
             )).scalars().all()
+            registry = get_registry()
             for s in srvs:
                 try:
+                    await MLPipeline._auto_resolve_stale(session, s.id)
+                    await calibrate_if_needed(session, s.name, s.id, registry)
                     created = await MLPipeline.analyze(session, s)
                     if created:
                         logger.info(

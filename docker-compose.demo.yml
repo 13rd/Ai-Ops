@@ -1,0 +1,6 @@
+services:
+  backend:
+    environment:
+      DEMO_MODE: "true"
+      ML_INFERENCE_INTERVAL_SEC: "30"
+      METRICS_INTERVAL_SEC: "15"

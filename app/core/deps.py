@@ -13,12 +13,11 @@ from app.models.user_server_access import ServerPermission, UserServerAccess
 
 security = HTTPBearer(auto_error=False)
 
-
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Resolve the JWT-authenticated user or raise AuthenticationError."""
+
     if credentials is None:
         raise AuthenticationError("Missing bearer credentials")
 
@@ -43,12 +42,10 @@ async def get_current_user(
         raise PermissionDeniedError("Inactive user")
     return user
 
-
 async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_active:
         raise PermissionDeniedError("Inactive user")
     return current_user
-
 
 def require_role(required_role: UserRole):
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
@@ -62,12 +59,10 @@ def require_role(required_role: UserRole):
 
     return role_checker
 
-
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != UserRole.ADMIN:
         raise PermissionDeniedError("Admin access required")
     return current_user
-
 
 async def require_server_write_access(
     server_id: int,
@@ -87,3 +82,29 @@ async def require_server_write_access(
     if row is None or row.permission != ServerPermission.WRITE.value:
         raise PermissionDeniedError("Write access to this server required")
     return current_user
+
+async def get_accessible_server_ids(db: AsyncSession, user: User) -> Optional[set[int]]:
+
+    if user.role == UserRole.ADMIN:
+        return None
+    rows = (
+        await db.execute(
+            select(UserServerAccess.server_id).where(UserServerAccess.user_id == user.id)
+        )
+    ).scalars().all()
+    return set(rows)
+
+async def assert_server_read_access(db: AsyncSession, user: User, server_id: int) -> None:
+
+    if user.role == UserRole.ADMIN:
+        return
+    row = (
+        await db.execute(
+            select(UserServerAccess).where(
+                UserServerAccess.user_id == user.id,
+                UserServerAccess.server_id == server_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise PermissionDeniedError("Access to this server required")

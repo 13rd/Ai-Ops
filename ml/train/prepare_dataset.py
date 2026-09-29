@@ -1,4 +1,3 @@
-"""Read MetricSnapshot+AnomalyEvent from DB, build per-server windowed splits."""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +21,7 @@ from ml.windows import build_windows
 
 logger = logging.getLogger(__name__)
 
+TAIL_LABEL_MIN = 10
 
 async def _load_server(session, server: Server) -> tuple[pd.DataFrame, list[str]]:
     res = await session.execute(
@@ -49,8 +49,6 @@ async def _load_server(session, server: Server) -> tuple[pd.DataFrame, list[str]
         "disk_write_bytes": s.disk_write_bytes or 0,
         "network_in_bytes": s.network_in_bytes or 0,
         "network_out_bytes": s.network_out_bytes or 0,
-        # placeholder list whose ratio matches the persisted value (kept
-        # for extract_features which expects a containers column)
         "containers": [
             {"status": "running"} for _ in range(int(round(_ratio(s.extra_data) * 4)))
         ] + [
@@ -69,7 +67,6 @@ async def _load_server(session, server: Server) -> tuple[pd.DataFrame, list[str]
             labels[idx] = ev.scenario_type
     return df, labels
 
-
 def _split(X: np.ndarray, y: list[str]) -> dict[str, tuple[np.ndarray, list[str]]]:
     n = len(X)
     a, b = int(n * 0.6), int(n * 0.8)
@@ -79,11 +76,11 @@ def _split(X: np.ndarray, y: list[str]) -> dict[str, tuple[np.ndarray, list[str]
         "test":  (X[b:],  y[b:]),
     }
 
-
-async def prepare(out_dir: Path) -> None:
+async def prepare(out_dir: Path, holdout_servers: set[str] | None = None) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     scalers_dir = Path("models/scalers")
     scalers_dir.mkdir(parents=True, exist_ok=True)
+    holdout_servers = holdout_servers or set()
 
     all_train_X, all_train_y = [], []
     all_val_X, all_val_y = [], []
@@ -97,6 +94,25 @@ async def prepare(out_dir: Path) -> None:
                 logger.warning("skip %s: only %d rows", srv.name, len(df))
                 continue
             X = extract_features(df)
+
+            if srv.name in holdout_servers:
+                normal_mask = np.array([l == "normal" for l in labels])
+                if normal_mask.sum() < WINDOW_SIZE:
+                    logger.warning("skip holdout %s: <%d normal rows", srv.name, WINDOW_SIZE)
+                    continue
+                scaler = StandardScaler().fit(X[normal_mask])
+                joblib.dump(scaler, scalers_dir / f"{srv.name}.pkl")
+                Xn = scaler.transform(X).astype(np.float32)
+                wins, wlabels = build_windows(
+                    Xn, labels, window_size=WINDOW_SIZE,
+                    stride=STRIDE, min_tail=TAIL_LABEL_MIN,
+                )
+                all_test_X.append(wins)
+                all_test_y.extend(wlabels)
+                logger.info("HOLDOUT server=%s rows=%d -> %d test windows",
+                            srv.name, len(df), len(wlabels))
+                continue
+
             splits = _split(X, labels)
 
             tr_X, tr_y = splits["train"]
@@ -109,14 +125,10 @@ async def prepare(out_dir: Path) -> None:
             logger.info("server=%s rows=%d normal-train=%d",
                         srv.name, len(df), int(normal_mask.sum()))
 
-            # Anomaly runs in this dataset are 20-40 samples (5-10 min) — never
-            # reach 50% of the 60-step window. Use 0.25 ratio uniformly so train
-            # and eval see the same label distribution. Train uses denser stride
-            # to compensate for class imbalance.
             bucket_cfg = {
-                "train": dict(stride=2, min_anomaly_ratio=0.25),
-                "val":   dict(stride=STRIDE, min_anomaly_ratio=0.25),
-                "test":  dict(stride=STRIDE, min_anomaly_ratio=0.25),
+                "train": dict(stride=2, min_tail=TAIL_LABEL_MIN),
+                "val":   dict(stride=STRIDE, min_tail=TAIL_LABEL_MIN),
+                "test":  dict(stride=STRIDE, min_tail=TAIL_LABEL_MIN),
             }
             for bucket, accX, accY in (
                 ("train", all_train_X, all_train_y),
@@ -146,14 +158,17 @@ async def prepare(out_dir: Path) -> None:
     logger.info("DONE train=%d val=%d test=%d",
                 len(all_train_y), len(all_val_y), len(all_test_y))
 
-
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="data/processed")
+    ap.add_argument(
+        "--holdout-servers", default="",
+        help="comma-separated server names routed wholly into the test split",
+    )
     args = ap.parse_args()
-    asyncio.run(prepare(Path(args.out)))
-
+    holdout = {s.strip() for s in args.holdout_servers.split(",") if s.strip()}
+    asyncio.run(prepare(Path(args.out), holdout_servers=holdout))
 
 if __name__ == "__main__":
     main()

@@ -160,6 +160,15 @@ services:
       - monitor-net
     restart: unless-stopped
 
+  # iperf3 sink for the network_storm anomaly (real eth0 traffic, not loopback).
+  net-peer:
+    image: networkstatic/iperf3
+    container_name: server-monitor-net-peer
+    command: ["-s"]
+    networks:
+      - monitor-net
+    restart: unless-stopped
+
 networks:
   monitor-net:
     driver: bridge

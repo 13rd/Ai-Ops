@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
-
 class AnomalyType(str, Enum):
     MEMORY_LEAK = "memory_leak"
     CPU_SPIKE = "cpu_spike"
@@ -14,10 +13,8 @@ class AnomalyType(str, Enum):
     SERVICE_DOWN = "service_down"
     DISK_PRESSURE = "disk_pressure"
     NETWORK_ANOMALY = "network_anomaly"
-    # ML classifier labels (Sprint 3)
     DISK_FILL = "disk_fill"
     NETWORK_STORM = "network_storm"
-
 
 class AnomalySeverity(str, Enum):
     LOW = "low"
@@ -25,12 +22,10 @@ class AnomalySeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class AnomalyStatus(str, Enum):
     OPEN = "open"
     INVESTIGATING = "investigating"
     RESOLVED = "resolved"
-
 
 class Anomaly(Base):
     __tablename__ = "anomalies"
@@ -43,8 +38,6 @@ class Anomaly(Base):
     anomaly_type = Column(String, nullable=False, index=True)
     severity = Column(String, default=AnomalySeverity.MEDIUM.value, nullable=False, index=True)
 
-    # Detector outputs. For the rule-based stub these are simple normalised scores;
-    # they will be populated by the real LSTM/CNN models later.
     reconstruction_error = Column(Float, nullable=False, default=0.0)
     threshold = Column(Float, nullable=False, default=0.0)
 

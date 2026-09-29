@@ -1,0 +1,7 @@
+{
+  "ae_precision": 0.5163674762407603,
+  "ae_recall": 0.7581395348837209,
+  "classifier_macro_f1": 0.9888049615836417,
+  "classifier_normal_accuracy": 0.9935720844811754,
+  "classification_report": "                 precision    recall  f1-score   support\n\n         normal       1.00      0.99      1.00      2178\n      cpu_spike       1.00      1.00      1.00       110\n    memory_leak       0.97      0.99      0.98       115\n      disk_fill       0.98      1.00      0.99       118\n  network_storm       0.97      1.00      0.98        98\ncontainer_crash       0.97      0.99      0.98       101\n   service_down       0.97      1.00      0.99       103\n\n       accuracy                           0.99      2823\n      macro avg       0.98      1.00      0.99      2823\n   weighted avg       0.99      0.99      0.99      2823\n"
+}

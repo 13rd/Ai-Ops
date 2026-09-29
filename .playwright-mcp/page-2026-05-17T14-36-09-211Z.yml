@@ -1,0 +1,18 @@
+- generic [ref=e2]:
+  - generic [ref=e131]:
+    - banner [ref=e132]:
+      - generic [ref=e133]:
+        - button [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+        - heading "Server Monitor" [level=6] [ref=e137]
+        - button "Notifications" [ref=e138] [cursor=pointer]:
+          - img [ref=e139]
+        - button "smoke_phase0_user" [ref=e141] [cursor=pointer]:
+          - generic [ref=e142]: S
+    - navigation
+    - main [ref=e143]:
+      - heading "Dashboard" [level=5] [ref=e144]
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e57] [cursor=pointer]:
+      - img [ref=e58]

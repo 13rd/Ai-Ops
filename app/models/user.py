@@ -2,15 +2,12 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
-from sqlalchemy.orm import relationship
 
 from app.db.base import Base
-
 
 class UserRole(str, Enum):
     ADMIN = "admin"
     OPERATOR = "operator"
-
 
 class User(Base):
     __tablename__ = "users"
@@ -23,5 +20,3 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-
-    # TODO: Add more granular RBAC when needed

@@ -1,0 +1,143 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - banner [ref=e107]:
+        - generic [ref=e108]:
+          - heading [level=6] [ref=e109]: Server Monitor
+          - button [ref=e110] [cursor=pointer]:
+            - img [ref=e112]
+          - button [ref=e114] [cursor=pointer]:
+            - generic [ref=e115]: A
+      - navigation [ref=e116]:
+        - generic [ref=e118]:
+          - heading [level=6] [ref=e120]: Server Monitor
+          - separator [ref=e121]
+          - list [ref=e122]:
+            - button [ref=e123] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e128]: Dashboard
+            - button [ref=e129] [cursor=pointer]:
+              - img [ref=e131]
+              - generic [ref=e134]: Servers
+            - button [ref=e135] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e140]: Anomalies
+            - button [ref=e141] [cursor=pointer]:
+              - img [ref=e143]
+              - generic [ref=e146]: Notifications
+            - button [ref=e147] [cursor=pointer]:
+              - img [ref=e149]
+              - generic [ref=e152]: Users
+            - button [ref=e153] [cursor=pointer]:
+              - img [ref=e155]
+              - generic [ref=e158]: Audit Log
+            - button [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]: Reports
+      - main [ref=e165]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - img [ref=e169]
+              - heading [level=5] [ref=e171]: Users
+              - generic [ref=e173]: "3"
+            - button [ref=e174] [cursor=pointer]:
+              - img [ref=e176]
+              - text: New User
+          - table [ref=e179]:
+            - rowgroup [ref=e180]:
+              - row [ref=e181]:
+                - columnheader [ref=e182]: Username
+                - columnheader [ref=e183]: Email
+                - columnheader [ref=e184]: Role
+                - columnheader [ref=e185]: Status
+                - columnheader [ref=e186]: Created
+                - columnheader [ref=e187]: Actions
+            - rowgroup [ref=e188]:
+              - row [ref=e189]:
+                - cell [ref=e190]:
+                  - paragraph [ref=e191]: smoke_phase0_user
+                - cell [ref=e192]:
+                  - paragraph [ref=e193]: smoke_phase0_user@example.com
+                - cell [ref=e194]:
+                  - generic [ref=e196]: admin
+                - cell [ref=e197]:
+                  - generic [ref=e199]: active
+                - cell [ref=e200]: 14 hours ago
+                - cell [ref=e201]:
+                  - generic [ref=e202]:
+                    - button [ref=e203] [cursor=pointer]:
+                      - img [ref=e204]
+                    - button [ref=e206] [cursor=pointer]:
+                      - img [ref=e207]
+              - row [ref=e209]:
+                - cell [ref=e210]:
+                  - paragraph [ref=e211]: operator
+                - cell [ref=e212]:
+                  - paragraph [ref=e213]: operator@example.com
+                - cell [ref=e214]:
+                  - generic [ref=e216]: operator
+                - cell [ref=e217]:
+                  - generic [ref=e219]: active
+                - cell [ref=e220]: a month ago
+                - cell [ref=e221]:
+                  - generic [ref=e222]:
+                    - button [ref=e223] [cursor=pointer]:
+                      - img [ref=e224]
+                    - button [ref=e226] [cursor=pointer]:
+                      - img [ref=e227]
+              - row [ref=e229]:
+                - cell [ref=e230]:
+                  - paragraph [ref=e231]: admin
+                - cell [ref=e232]:
+                  - paragraph [ref=e233]: admin@example.com
+                - cell [ref=e234]:
+                  - generic [ref=e236]: admin
+                - cell [ref=e237]:
+                  - generic [ref=e239]: active
+                - cell [ref=e240]: a month ago
+                - cell [ref=e241]:
+                  - generic [ref=e242]:
+                    - button [ref=e243] [cursor=pointer]:
+                      - img [ref=e244]
+                    - button [ref=e246] [cursor=pointer]:
+                      - img [ref=e247]
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button [ref=e249] [cursor=pointer]:
+        - img [ref=e58]
+  - dialog "New User" [ref=e252]:
+    - heading "New User" [level=2] [ref=e253]
+    - tablist [ref=e256]:
+      - tab "Profile" [active] [selected] [ref=e257] [cursor=pointer]: Profile
+      - tab "Server Access" [ref=e258] [cursor=pointer]: Server Access
+    - generic [ref=e262]:
+      - generic [ref=e263]:
+        - generic: Username
+        - generic [ref=e264]:
+          - textbox "Username" [ref=e265]
+          - group:
+            - generic: Username
+      - generic [ref=e266]:
+        - generic: Email
+        - generic [ref=e267]:
+          - textbox "Email" [ref=e268]
+          - group:
+            - generic: Email
+      - generic [ref=e269]:
+        - generic [ref=e270]: Role
+        - generic [ref=e271]:
+          - combobox [ref=e272] [cursor=pointer]: Operator
+          - textbox: operator
+          - img
+          - group:
+            - generic: Role
+      - generic [ref=e273]:
+        - generic: Password
+        - generic [ref=e274]:
+          - textbox "Password" [ref=e275]
+          - group:
+            - generic: Password
+    - generic [ref=e276]:
+      - button "Cancel" [ref=e277] [cursor=pointer]
+      - button "Create" [ref=e278] [cursor=pointer]

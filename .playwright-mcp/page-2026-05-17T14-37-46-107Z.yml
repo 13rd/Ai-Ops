@@ -1,0 +1,25 @@
+- generic [ref=e2]:
+  - generic [ref=e108]:
+    - generic [ref=e109]:
+      - heading "Server Monitor" [level=5] [ref=e110]
+      - paragraph [ref=e111]: Sign in to continue
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - generic [ref=e114]: Username
+        - generic [ref=e115]:
+          - textbox "Username" [active] [ref=e116]
+          - group:
+            - generic: Username
+        - paragraph [ref=e121]: Username is required
+      - generic [ref=e117]:
+        - generic: Password
+        - generic [ref=e118]:
+          - textbox "Password" [ref=e119]
+          - group:
+            - generic: Password
+        - paragraph [ref=e122]: Password must be at least 8 characters
+      - button "Sign in" [ref=e120] [cursor=pointer]: Sign in
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e57] [cursor=pointer]:
+      - img [ref=e58]

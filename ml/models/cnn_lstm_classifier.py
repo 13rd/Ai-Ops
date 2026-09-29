@@ -1,9 +1,7 @@
-"""CNN-LSTM classifier for anomaly type classification (7 classes)."""
 from __future__ import annotations
 
 from tensorflow import keras
 from tensorflow.keras import layers
-
 
 def build_cnn_lstm_classifier(
     window_size: int = 60, n_features: int = 10, n_classes: int = 7,

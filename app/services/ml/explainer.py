@@ -1,11 +1,3 @@
-"""Combined SHAP (classifier) + per-feature MSE (AE) explainability.
-
-`Explainer.explain(candidate)` stays as a static method for backwards
-compatibility with the rule-based pipeline path. The richer
-`Explainer(registry).explain_window(...)` is used by the AE→classifier
-path and returns a sorted list of feature impacts.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -17,19 +9,13 @@ from ml.config import FEATURE_COLS
 
 logger = logging.getLogger(__name__)
 
-
 class Explainer:
     def __init__(self, registry=None):
         self.registry = registry
 
     @staticmethod
     def explain(candidate: AnomalyCandidate) -> dict | list[dict]:
-        """Backwards-compatible entrypoint.
 
-        For rule-based candidates: returns the legacy {feature: weight} dict.
-        For autoencoder candidates: falls back to per-feature MSE on the
-        carried window (no SHAP, no class context).
-        """
         if candidate.source == "autoencoder" and candidate.window is not None:
             return Explainer().explain_window(
                 candidate.window, candidate.window_recon, class_idx=None
@@ -43,9 +29,22 @@ class Explainer:
         return dict(top)
 
     def explain_window(
-        self, X: np.ndarray, X_hat: np.ndarray, class_idx: int | None
+        self,
+        X: np.ndarray,
+        X_hat: np.ndarray,
+        class_idx: int | None,
+        scaler=None,
+        per_feature_thresholds: np.ndarray | None = None,
     ) -> list[dict]:
-        ae_imp = np.mean((X - X_hat) ** 2, axis=(0, 1))  # (10,)
+        recent = 20
+        err = (X - X_hat)[:, -recent:, :] ** 2
+
+        if per_feature_thresholds is not None:
+            err = err / np.maximum(per_feature_thresholds, 1e-9)
+        elif scaler is not None:
+            scale_sq = np.maximum(scaler.scale_ ** 2, 1e-8)
+            err = err / scale_sq
+        ae_imp = np.mean(err, axis=(0, 1))
         ae_share = ae_imp / max(ae_imp.sum(), 1e-12)
 
         clf_share = None
@@ -64,7 +63,7 @@ class Explainer:
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("SHAP failed at inference: %s", exc)
 
-        combined = ae_share if clf_share is None else 0.5 * ae_share + 0.5 * clf_share
+        combined = ae_share if clf_share is None else 0.2 * ae_share + 0.8 * clf_share
 
         return [
             {

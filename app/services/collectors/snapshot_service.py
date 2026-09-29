@@ -11,19 +11,19 @@ from app.models.server import Server
 from app.schemas.container import ContainerSnapshotBase
 from app.schemas.metric import MetricSnapshotBase
 
-
 class MetricService:
-    """
-    Service for managing metric snapshots.
-    """
 
     @staticmethod
     async def save_metric_snapshot(
         db: AsyncSession, server_id: int, metrics: MetricSnapshotBase
     ) -> MetricSnapshot:
-        """
-        Save metric snapshot to database and update historical metrics.
-        """
+
+        extra_data: dict = {}
+        if metrics.extra_data:
+            extra_data.update(metrics.extra_data)
+        if metrics.process_count is not None:
+            extra_data["process_count"] = metrics.process_count
+
         snapshot = MetricSnapshot(
             server_id=server_id,
             cpu_usage_percent=metrics.cpu_usage_percent,
@@ -45,21 +45,16 @@ class MetricService:
             disk_write_bytes=metrics.disk_write_bytes,
             process_count=metrics.process_count,
             active_connections=metrics.active_connections,
+            extra_data=extra_data,
         )
 
         db.add(snapshot)
         await db.commit()
         await db.refresh(snapshot)
 
-        # Update historical metrics
         await MetricService._update_historical_metrics(
             db, server_id, metrics, snapshot.collected_at
         )
-
-        # Update snapshot's extra_data with process count if available
-        if metrics.process_count is not None:
-            snapshot.extra_data["process_count"] = metrics.process_count
-            await db.commit()
 
         return snapshot
 
@@ -67,15 +62,11 @@ class MetricService:
     async def _update_historical_metrics(
         db: AsyncSession, server_id: int, metrics: MetricSnapshotBase, timestamp: datetime
     ):
-        """
-        Update historical metrics based on the current snapshot.
-        """
+
         from app.services.metrics.historical_service import HistoricalMetricService
 
-        # Round timestamp to nearest minute for consistent aggregation
         minute_timestamp = timestamp.replace(second=0, microsecond=0)
 
-        # Map metric values to historical metric types
         metric_updates = [
             (MetricType.CPU_PERCENT, metrics.cpu_usage_percent),
             (MetricType.MEMORY_PERCENT, metrics.memory_usage_percent),
@@ -89,7 +80,6 @@ class MetricService:
 
         for metric_type, value in metric_updates:
             if value is not None:
-                # Create or update the minute-level historical metric
                 await MetricService._save_minute_metric(
                     db, server_id, metric_type, value, minute_timestamp
                 )
@@ -98,12 +88,9 @@ class MetricService:
     async def _save_minute_metric(
         db: AsyncSession, server_id: int, metric_type: MetricType, value: float, timestamp: datetime
     ):
-        """
-        Save or update a minute-level historical metric.
-        """
+
         from app.services.metrics.historical_service import HistoricalMetricService
 
-        # Look for existing minute-level entry
         query = (
             select(HistoricalMetric)
             .where(
@@ -120,13 +107,11 @@ class MetricService:
         existing_metric = result.scalar_one_or_none()
 
         if existing_metric:
-            # Update the existing metric with new min/max/avg values
             if existing_metric.value_min is None or value < existing_metric.value_min:
                 existing_metric.value_min = value
             if existing_metric.value_max is None or value > existing_metric.value_max:
                 existing_metric.value_max = value
 
-            # Calculate new average (simple approach - could be improved with weighted average)
             total_samples = existing_metric.sample_count + 1
             total_sum = (existing_metric.value_avg * existing_metric.sample_count) + value
             existing_metric.value_avg = total_sum / total_samples
@@ -134,7 +119,6 @@ class MetricService:
             existing_metric.value_last = value
             existing_metric.sample_count += 1
         else:
-            # Create new minute-level metric
             new_metric = HistoricalMetric(
                 server_id=server_id,
                 metric_type=metric_type,
@@ -153,9 +137,7 @@ class MetricService:
 
     @staticmethod
     async def get_latest_metrics(db: AsyncSession, server_id: int) -> Optional[MetricSnapshot]:
-        """
-        Get latest metric snapshot for server.
-        """
+
         result = await db.execute(
             select(MetricSnapshot)
             .where(MetricSnapshot.server_id == server_id)
@@ -168,9 +150,7 @@ class MetricService:
     async def get_metrics_history(
         db: AsyncSession, server_id: int, limit: int = 100
     ) -> List[MetricSnapshot]:
-        """
-        Get metric history for server.
-        """
+
         result = await db.execute(
             select(MetricSnapshot)
             .where(MetricSnapshot.server_id == server_id)
@@ -179,27 +159,17 @@ class MetricService:
         )
         return list(result.scalars().all())
 
-
 class ContainerService:
-    """
-    Service for managing container snapshots.
-    """
 
     @staticmethod
     async def save_container_snapshots(
         db: AsyncSession, server_id: int, containers: List[ContainerSnapshotBase]
     ) -> List[ContainerSnapshot]:
-        """
-        Save container snapshots to database.
-        Replaces old snapshots for the server.
-        """
-        # Delete old snapshots for this server
-        # TODO: Consider keeping history in Sprint 2+
+
         from sqlalchemy import delete
 
         await db.execute(delete(ContainerSnapshot).where(ContainerSnapshot.server_id == server_id))
 
-        # Create new snapshots
         snapshots = []
         for container_data in containers:
             snapshot = ContainerSnapshot(
@@ -230,16 +200,13 @@ class ContainerService:
 
     @staticmethod
     async def get_latest_containers(db: AsyncSession, server_id: int) -> List[ContainerSnapshot]:
-        """
-        Get latest container snapshots for server.
-        """
+
         result = await db.execute(
             select(ContainerSnapshot)
             .where(ContainerSnapshot.server_id == server_id)
             .order_by(ContainerSnapshot.collected_at.desc())
         )
 
-        # Group by container_id and get latest for each
         containers_dict = {}
         for container in result.scalars().all():
             if container.container_id not in containers_dict:

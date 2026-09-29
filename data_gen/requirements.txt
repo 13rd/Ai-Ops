@@ -1,0 +1,8 @@
+# data_gen/ additional dependencies
+# pandas is now in pyproject.toml (installed via: uv add pandas)
+# All other required packages are already in pyproject.toml:
+#   paramiko, sqlalchemy, psycopg2-binary, pydantic, pydantic-settings
+
+# Only needed if running data_gen standalone (outside the main venv):
+pandas>=2.0.0
+python-dotenv>=1.0.0

@@ -16,11 +16,7 @@ from app.schemas.alert import CreateAlertRequest
 
 logger = logging.getLogger(__name__)
 
-
 class AlertService:
-    """
-    Service for managing alert creation, monitoring, and state management.
-    """
 
     @staticmethod
     async def create_alert(
@@ -36,9 +32,7 @@ class AlertService:
         current_value: Optional[str] = None,
         metadata: Optional[Dict] = None,
     ) -> Alert:
-        """
-        Create a new alert record.
-        """
+
         alert = Alert(
             title=title,
             description=description,
@@ -68,9 +62,7 @@ class AlertService:
         limit: int = 100,
         offset: int = 0,
     ) -> List[Alert]:
-        """
-        Get alerts with optional filters.
-        """
+
         query = select(Alert).order_by(desc(Alert.created_at))
 
         conditions = []
@@ -91,24 +83,20 @@ class AlertService:
 
     @staticmethod
     async def get_alert_by_id(db: AsyncSession, alert_id: int) -> Optional[Alert]:
-        """
-        Get alert by ID.
-        """
+
         query = select(Alert).where(Alert.id == alert_id)
         result = await db.execute(query)
         return result.scalar_one_or_none()
 
     @staticmethod
     async def acknowledge_alert(db: AsyncSession, alert_id: int, user_id: int) -> bool:
-        """
-        Acknowledge an alert.
-        """
+
         alert = await AlertService.get_alert_by_id(db, alert_id)
         if not alert:
             return False
 
         if alert.status != AlertStatus.OPEN:
-            return False  # Only open alerts can be acknowledged
+            return False
 
         alert.status = AlertStatus.ACKNOWLEDGED
         alert.acknowledged_at = datetime.utcnow()
@@ -119,15 +107,13 @@ class AlertService:
 
     @staticmethod
     async def resolve_alert(db: AsyncSession, alert_id: int) -> bool:
-        """
-        Resolve an alert as fixed.
-        """
+
         alert = await AlertService.get_alert_by_id(db, alert_id)
         if not alert:
             return False
 
         if alert.status in [AlertStatus.RESOLVED]:
-            return False  # Already resolved
+            return False
 
         alert.status = AlertStatus.RESOLVED
         alert.resolved_at = datetime.utcnow()
@@ -142,9 +128,7 @@ class AlertService:
         severity: Optional[AlertSeverity] = None,
         server_id: Optional[int] = None,
     ) -> int:
-        """
-        Get count of alerts with optional filters.
-        """
+
         query = select(Alert)
 
         conditions = []
@@ -161,21 +145,14 @@ class AlertService:
         result = await db.execute(query)
         return len(list(result.scalars().all()))
 
-
 class AlertEngine:
-    """
-    Engine for monitoring metrics and containers to generate alerts based on rules.
-    """
 
     @staticmethod
     async def evaluate_server_metrics(
         db: AsyncSession, server: Server, latest_metrics: Optional[MetricSnapshot] = None
     ) -> List[Alert]:
-        """
-        Evaluate server metrics against alert rules and create alerts if thresholds are exceeded.
-        """
+
         if not latest_metrics:
-            # Get latest metrics for this server
             from app.services.collectors.snapshot_service import MetricService
 
             latest_metrics = await MetricService.get_latest_metrics(db, server.id)
@@ -185,22 +162,18 @@ class AlertEngine:
 
         created_alerts = []
 
-        # Check CPU threshold
         cpu_alert = await AlertEngine._check_cpu_threshold(db, server, latest_metrics)
         if cpu_alert:
             created_alerts.append(cpu_alert)
 
-        # Check memory threshold
         mem_alert = await AlertEngine._check_memory_threshold(db, server, latest_metrics)
         if mem_alert:
             created_alerts.append(mem_alert)
 
-        # Check disk threshold
         disk_alert = await AlertEngine._check_disk_threshold(db, server, latest_metrics)
         if disk_alert:
             created_alerts.append(disk_alert)
 
-        # Check load average (optional - could be configured as rule)
         load_alert = await AlertEngine._check_load_average(db, server, latest_metrics)
         if load_alert:
             created_alerts.append(load_alert)
@@ -211,15 +184,10 @@ class AlertEngine:
     async def _check_cpu_threshold(
         db: AsyncSession, server: Server, metrics: MetricSnapshot
     ) -> Optional[Alert]:
-        """
-        Check if CPU usage exceeds threshold (default 80%).
-        """
-        # Get threshold from system defaults (could be configured differently)
-        cpu_threshold = 80.0  # Default high CPU usage threshold
 
-        # In a real system, this would come from configured alert rules
+        cpu_threshold = 80.0
+
         if metrics.cpu_usage_percent and metrics.cpu_usage_percent > cpu_threshold:
-            # Check if there's already an open alert for this condition to avoid spam
             existing_alert = await AlertEngine._has_open_alert(
                 db, server.id, AlertRuleType.CPU_THRESHOLD
             )
@@ -243,10 +211,8 @@ class AlertEngine:
     async def _check_memory_threshold(
         db: AsyncSession, server: Server, metrics: MetricSnapshot
     ) -> Optional[Alert]:
-        """
-        Check if memory usage exceeds threshold (default 85%).
-        """
-        memory_threshold = 85.0  # Default memory usage threshold
+
+        memory_threshold = 85.0
 
         if metrics.memory_usage_percent and metrics.memory_usage_percent > memory_threshold:
             existing_alert = await AlertEngine._has_open_alert(
@@ -275,10 +241,8 @@ class AlertEngine:
     async def _check_disk_threshold(
         db: AsyncSession, server: Server, metrics: MetricSnapshot
     ) -> Optional[Alert]:
-        """
-        Check if disk usage exceeds threshold (default 90%).
-        """
-        disk_threshold = 90.0  # Default disk usage threshold
+
+        disk_threshold = 90.0
 
         if metrics.disk_usage_percent and metrics.disk_usage_percent > disk_threshold:
             existing_alert = await AlertEngine._has_open_alert(
@@ -304,19 +268,14 @@ class AlertEngine:
     async def _check_load_average(
         db: AsyncSession, server: Server, metrics: MetricSnapshot
     ) -> Optional[Alert]:
-        """
-        Check if load average is concerning (high relative to CPU cores).
-        For now, we'll check if 1-minute load exceeds 2.0 * CPU cores (just as an example).
-        """
-        # In a real system, we might get CPU core count from server metadata
-        # For now we'll use the 1-minute load average > 4.0 as a trigger point
+
         load_threshold = 4.0
 
         if metrics.load_average_1m and metrics.load_average_1m > load_threshold:
             existing_alert = await AlertEngine._has_open_alert(
                 db,
                 server.id,
-                AlertRuleType.CPU_THRESHOLD,  # Using CPU_THRESHOLD as a proxy
+                AlertRuleType.CPU_THRESHOLD,
             )
 
             if not existing_alert:
@@ -339,22 +298,17 @@ class AlertEngine:
 
     @staticmethod
     async def evaluate_containers(db: AsyncSession, server: Server) -> List[Alert]:
-        """
-        Check container states and create alerts for problematic containers.
-        """
+
         from app.services.collectors.snapshot_service import ContainerService
 
-        # Get latest containers for this server
         containers = await ContainerService.get_latest_containers(db, server.id)
 
         created_alerts = []
 
         for container in containers:
-            # Check if container is down/unhealthy
             if container.status and (
                 "exited" in container.status.lower() or "dead" in container.status.lower()
             ):
-                # Check if there's already an open alert for this container
                 existing_alert = await AlertEngine._has_open_container_alert(
                     db, server.id, container.container_id, AlertRuleType.CONTAINER_DOWN
                 )
@@ -377,7 +331,6 @@ class AlertEngine:
                     )
                     created_alerts.append(alert)
 
-            # Check for health status in extra_data
             if (
                 container.extra_data
                 and container.extra_data.get("State", {}).get("Health", {}).get("Status")
@@ -409,10 +362,7 @@ class AlertEngine:
 
     @staticmethod
     async def check_offline_servers(db: AsyncSession) -> List[Alert]:
-        """
-        Check for servers that appear to be offline based on last seen time.
-        """
-        # Define "offline" as not seen in the last 5 minutes
+
         from datetime import timedelta
 
         offline_threshold = datetime.utcnow() - timedelta(minutes=5)
@@ -420,7 +370,7 @@ class AlertEngine:
         query = select(Server).where(
             and_(
                 Server.last_seen < offline_threshold,
-                Server.status != "offline",  # Only alert if status wasn't already marked as offline
+                Server.status != "offline",
             )
         )
 
@@ -429,7 +379,6 @@ class AlertEngine:
 
         created_alerts = []
         for server in offline_servers:
-            # Check if there's already an open alert for this server being offline
             existing_alert = await AlertEngine._has_open_server_offline_alert(db, server.id)
 
             if not existing_alert:
@@ -452,9 +401,7 @@ class AlertEngine:
 
     @staticmethod
     async def _has_open_alert(db: AsyncSession, server_id: int, rule_type: AlertRuleType) -> bool:
-        """
-        Check if there's already an open alert for this combination of server and rule type.
-        """
+
         query = select(Alert).where(
             and_(
                 Alert.server_id == server_id,
@@ -469,9 +416,7 @@ class AlertEngine:
     async def _has_open_container_alert(
         db: AsyncSession, server_id: int, container_id: str, rule_type: AlertRuleType
     ) -> bool:
-        """
-        Check if there's already an open alert for this container.
-        """
+
         query = select(Alert).where(
             and_(
                 Alert.server_id == server_id,
@@ -485,9 +430,7 @@ class AlertEngine:
 
     @staticmethod
     async def _has_open_server_offline_alert(db: AsyncSession, server_id: int) -> bool:
-        """
-        Check if there's already an open server offline alert for this server.
-        """
+
         query = select(Alert).where(
             and_(
                 Alert.server_id == server_id,
@@ -500,13 +443,9 @@ class AlertEngine:
 
     @staticmethod
     async def run_alert_evaluation_cycle(db: AsyncSession):
-        """
-        Run a complete cycle of alert evaluation across all servers.
-        This should be called periodically by the scheduler.
-        """
+
         logger.info("Starting alert evaluation cycle")
 
-        # Get all servers
         servers_query = select(Server)
         servers_result = await db.execute(servers_query)
         servers = servers_result.scalars().all()
@@ -515,7 +454,6 @@ class AlertEngine:
 
         for server in servers:
             try:
-                # Evaluate metrics for this server
                 latest_metrics = None
                 from app.services.collectors.snapshot_service import MetricService
 
@@ -526,14 +464,12 @@ class AlertEngine:
                 )
                 total_created += len(created_metrics_alerts)
 
-                # Evaluate containers for this server
                 created_container_alerts = await AlertEngine.evaluate_containers(db, server)
                 total_created += len(created_container_alerts)
 
             except Exception as e:
                 logger.error(f"Error evaluating alerts for server {server.name}: {e}")
 
-        # Check for offline servers
         try:
             offline_alerts = await AlertEngine.check_offline_servers(db)
             total_created += len(offline_alerts)

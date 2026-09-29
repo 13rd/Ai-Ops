@@ -14,13 +14,11 @@ from app.services.servers.server_service import ServerService
 
 router = APIRouter()
 
-
 async def _require_server(db: AsyncSession, server_id: int):
     server = await ServerService.get_server_by_id(db, server_id)
     if not server:
         raise NotFoundError("Server not found")
     return server
-
 
 async def _container_action(
     *,
@@ -34,7 +32,7 @@ async def _container_action(
     error_code: str,
     error_message: str,
     extra_details: dict | None = None,
-) -> dict:  # user already verified by require_server_write_access dep
+) -> dict:
     await _require_server(db, server_id)
     success = await fn()
     if not success:
@@ -52,7 +50,6 @@ async def _container_action(
         request=request,
     )
     return ok(data=details, message=f"Container {action} succeeded")
-
 
 @router.post("/servers/{server_id}/containers/{container_id}/start")
 async def start_container(
@@ -74,7 +71,6 @@ async def start_container(
         error_message="Failed to start container",
     )
 
-
 @router.post("/servers/{server_id}/containers/{container_id}/stop")
 async def stop_container(
     server_id: int,
@@ -95,7 +91,6 @@ async def stop_container(
         error_message="Failed to stop container",
     )
 
-
 @router.post("/servers/{server_id}/containers/{container_id}/restart")
 async def restart_container(
     server_id: int,
@@ -115,7 +110,6 @@ async def restart_container(
         error_code="container_restart_failed",
         error_message="Failed to restart container",
     )
-
 
 @router.delete("/servers/{server_id}/containers/{container_id}")
 async def remove_container(
@@ -139,7 +133,6 @@ async def remove_container(
         extra_details={"force": force},
     )
 
-
 @router.get("/servers/{server_id}/containers/{container_id}")
 async def get_container_details(
     server_id: int,
@@ -155,7 +148,6 @@ async def get_container_details(
         data=ContainerSnapshotResponse.model_validate(container).model_dump(),
         message="Container details retrieved successfully",
     )
-
 
 @router.get("/servers/{server_id}/containers/{container_id}/logs")
 async def get_container_logs(

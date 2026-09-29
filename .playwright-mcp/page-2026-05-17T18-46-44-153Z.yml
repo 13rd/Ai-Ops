@@ -1,0 +1,238 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - banner [ref=e107]:
+        - generic [ref=e108]:
+          - heading [level=6] [ref=e109]: Server Monitor
+          - button [ref=e110] [cursor=pointer]:
+            - img [ref=e112]
+          - button [ref=e114] [cursor=pointer]:
+            - generic [ref=e115]: A
+      - navigation [ref=e116]:
+        - generic [ref=e118]:
+          - heading [level=6] [ref=e120]: Server Monitor
+          - separator [ref=e121]
+          - list [ref=e122]:
+            - button [ref=e123] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e128]: Dashboard
+            - button [ref=e129] [cursor=pointer]:
+              - img [ref=e131]
+              - generic [ref=e134]: Servers
+            - button [ref=e135] [cursor=pointer]:
+              - img [ref=e137]
+              - generic [ref=e140]: Anomalies
+            - button [ref=e141] [cursor=pointer]:
+              - img [ref=e143]
+              - generic [ref=e146]: Notifications
+            - button [ref=e147] [cursor=pointer]:
+              - img [ref=e149]
+              - generic [ref=e152]: Users
+            - button [ref=e153] [cursor=pointer]:
+              - img [ref=e155]
+              - generic [ref=e158]: Audit Log
+            - button [ref=e159] [cursor=pointer]:
+              - img [ref=e161]
+              - generic [ref=e164]: Reports
+      - main [ref=e165]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - img [ref=e169]
+              - heading [level=5] [ref=e171]: Users
+              - generic [ref=e173]: "3"
+            - button [ref=e174] [cursor=pointer]:
+              - img [ref=e176]
+              - text: New User
+          - table [ref=e179]:
+            - rowgroup [ref=e180]:
+              - row [ref=e181]:
+                - columnheader [ref=e182]: Username
+                - columnheader [ref=e183]: Email
+                - columnheader [ref=e184]: Role
+                - columnheader [ref=e185]: Status
+                - columnheader [ref=e186]: Created
+                - columnheader [ref=e187]: Actions
+            - rowgroup [ref=e188]:
+              - row [ref=e189]:
+                - cell [ref=e190]:
+                  - paragraph [ref=e191]: smoke_phase0_user
+                - cell [ref=e192]:
+                  - paragraph [ref=e193]: smoke_phase0_user@example.com
+                - cell [ref=e194]:
+                  - generic [ref=e196]: admin
+                - cell [ref=e197]:
+                  - generic [ref=e199]: active
+                - cell [ref=e200]: 14 hours ago
+                - cell [ref=e201]:
+                  - generic [ref=e202]:
+                    - button [ref=e203] [cursor=pointer]:
+                      - img [ref=e204]
+                    - button [ref=e206] [cursor=pointer]:
+                      - img [ref=e207]
+              - row [ref=e209]:
+                - cell [ref=e210]:
+                  - paragraph [ref=e211]: operator
+                - cell [ref=e212]:
+                  - paragraph [ref=e213]: operator@example.com
+                - cell [ref=e214]:
+                  - generic [ref=e216]: operator
+                - cell [ref=e217]:
+                  - generic [ref=e219]: active
+                - cell [ref=e220]: a month ago
+                - cell [ref=e221]:
+                  - generic [ref=e222]:
+                    - button [ref=e223] [cursor=pointer]:
+                      - img [ref=e224]
+                    - button [ref=e226] [cursor=pointer]:
+                      - img [ref=e227]
+              - row [ref=e229]:
+                - cell [ref=e230]:
+                  - paragraph [ref=e231]: admin
+                - cell [ref=e232]:
+                  - paragraph [ref=e233]: admin@example.com
+                - cell [ref=e234]:
+                  - generic [ref=e236]: admin
+                - cell [ref=e237]:
+                  - generic [ref=e239]: active
+                - cell [ref=e240]: a month ago
+                - cell [ref=e241]:
+                  - generic [ref=e242]:
+                    - button [ref=e243] [cursor=pointer]:
+                      - img [ref=e244]
+                    - button [ref=e246] [cursor=pointer]:
+                      - img [ref=e247]
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button [ref=e249] [cursor=pointer]:
+        - img [ref=e58]
+  - dialog "New User" [ref=e252]:
+    - heading "New User" [level=2] [ref=e253]
+    - tablist [ref=e256]:
+      - tab "Profile" [ref=e257] [cursor=pointer]
+      - tab "Server Access" [active] [selected] [ref=e258] [cursor=pointer]: Server Access
+    - table [ref=e281]:
+      - rowgroup [ref=e282]:
+        - row "Server Permission" [ref=e283]:
+          - columnheader [ref=e284]
+          - columnheader "Server" [ref=e285]
+          - columnheader "Permission" [ref=e286]
+      - rowgroup [ref=e287]:
+        - row "prod-web-01 10.0.0.100" [ref=e288]:
+          - cell [ref=e289]:
+            - generic [ref=e290] [cursor=pointer]:
+              - checkbox [ref=e291]
+              - img [ref=e292]
+          - cell "prod-web-01 10.0.0.100" [ref=e294]:
+            - paragraph [ref=e295]: prod-web-01
+            - text: 10.0.0.100
+          - cell [ref=e296]:
+            - radiogroup [ref=e297]:
+              - generic [ref=e298]:
+                - generic:
+                  - radio "Read" [checked] [disabled]
+                  - generic:
+                    - img
+                    - img
+                - generic [ref=e299]: Read
+              - generic [ref=e300]:
+                - generic:
+                  - radio "Write" [disabled]
+                  - generic:
+                    - img
+                - generic [ref=e301]: Write
+        - row "testbed-server-c localhost" [ref=e302]:
+          - cell [ref=e303]:
+            - generic [ref=e304] [cursor=pointer]:
+              - checkbox [ref=e305]
+              - img [ref=e306]
+          - cell "testbed-server-c localhost" [ref=e308]:
+            - paragraph [ref=e309]: testbed-server-c
+            - text: localhost
+          - cell [ref=e310]:
+            - radiogroup [ref=e311]:
+              - generic [ref=e312]:
+                - generic:
+                  - radio "Read" [checked] [disabled]
+                  - generic:
+                    - img
+                    - img
+                - generic [ref=e313]: Read
+              - generic [ref=e314]:
+                - generic:
+                  - radio "Write" [disabled]
+                  - generic:
+                    - img
+                - generic [ref=e315]: Write
+        - row "testbed-server-b localhost" [ref=e316]:
+          - cell [ref=e317]:
+            - generic [ref=e318] [cursor=pointer]:
+              - checkbox [ref=e319]
+              - img [ref=e320]
+          - cell "testbed-server-b localhost" [ref=e322]:
+            - paragraph [ref=e323]: testbed-server-b
+            - text: localhost
+          - cell [ref=e324]:
+            - radiogroup [ref=e325]:
+              - generic [ref=e326]:
+                - generic:
+                  - radio "Read" [checked] [disabled]
+                  - generic:
+                    - img
+                    - img
+                - generic [ref=e327]: Read
+              - generic [ref=e328]:
+                - generic:
+                  - radio "Write" [disabled]
+                  - generic:
+                    - img
+                - generic [ref=e329]: Write
+        - row "testbed-server-a localhost" [ref=e330]:
+          - cell [ref=e331]:
+            - generic [ref=e332] [cursor=pointer]:
+              - checkbox [ref=e333]
+              - img [ref=e334]
+          - cell "testbed-server-a localhost" [ref=e336]:
+            - paragraph [ref=e337]: testbed-server-a
+            - text: localhost
+          - cell [ref=e338]:
+            - radiogroup [ref=e339]:
+              - generic [ref=e340]:
+                - generic:
+                  - radio "Read" [checked] [disabled]
+                  - generic:
+                    - img
+                    - img
+                - generic [ref=e341]: Read
+              - generic [ref=e342]:
+                - generic:
+                  - radio "Write" [disabled]
+                  - generic:
+                    - img
+                - generic [ref=e343]: Write
+        - row "test 185.58.115.243" [ref=e344]:
+          - cell [ref=e345]:
+            - generic [ref=e346] [cursor=pointer]:
+              - checkbox [ref=e347]
+              - img [ref=e348]
+          - cell "test 185.58.115.243" [ref=e350]:
+            - paragraph [ref=e351]: test
+            - text: 185.58.115.243
+          - cell [ref=e352]:
+            - radiogroup [ref=e353]:
+              - generic [ref=e354]:
+                - generic:
+                  - radio "Read" [checked] [disabled]
+                  - generic:
+                    - img
+                    - img
+                - generic [ref=e355]: Read
+              - generic [ref=e356]:
+                - generic:
+                  - radio "Write" [disabled]
+                  - generic:
+                    - img
+                - generic [ref=e357]: Write
+    - generic [ref=e276]:
+      - button "Cancel" [ref=e277] [cursor=pointer]
+      - button "Create" [ref=e278] [cursor=pointer]

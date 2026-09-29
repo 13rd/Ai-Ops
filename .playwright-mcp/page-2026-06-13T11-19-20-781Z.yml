@@ -1,0 +1,87 @@
+- document [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - paragraph [ref=e13]: Хранилища
+      - paragraph [ref=e20]: Backend — FastAPI async
+      - paragraph [ref=e27]: Управляемые серверы
+      - paragraph [ref=e34]: Клиентский слой
+      - paragraph [ref=e41]: Доменные сервисы
+      - paragraph [ref=e48]: ML Pipeline
+      - paragraph [ref=e55]: Collectors
+      - paragraph [ref=e62]: Планировщики asyncio
+      - paragraph [ref=e69]: Core
+      - paragraph [ref=e76]: API v1
+    - generic [ref=e104]:
+      - paragraph [ref=e110]: HTTPS
+      - paragraph [ref=e116]: /api
+      - paragraph [ref=e122]: статика
+      - paragraph [ref=e128]: SSH-туннель
+      - paragraph [ref=e134]: SSH
+      - paragraph [ref=e140]: SSH
+      - paragraph [ref=e146]: нагрузка
+      - paragraph [ref=e152]: HTTP
+      - paragraph [ref=e158]: снапшоты
+      - paragraph [ref=e164]: аномалии + рекомендации
+      - paragraph [ref=e170]: alerts
+      - paragraph [ref=e176]: in-app
+      - paragraph [ref=e182]: запросы
+      - paragraph [ref=e188]: audit_log
+    - generic [ref=e189]:
+      - paragraph [ref=e196]:
+        - text: React SPA
+        - text: Vite + MUI + TanStack Query
+      - paragraph [ref=e203]: Telegram
+      - paragraph [ref=e210]: Grafana
+      - paragraph [ref=e217]:
+        - text: Целевые хосты
+        - text: SSH / Paramiko
+      - paragraph [ref=e224]:
+        - text: stress-target
+        - text: демо-источник аномалий
+      - paragraph [ref=e231]:
+        - text: Nginx
+        - text: reverse proxy + статика SPA
+      - paragraph [ref=e238]:
+        - text: REST endpoints
+        - text: auth · servers · metrics · anomalies ·
+        - text: recommendations · alerts · containers ·
+        - text: notifications · audit · users · llm_settings
+      - paragraph [ref=e245]:
+        - text: WebSocket
+        - text: console · container_logs
+      - paragraph [ref=e252]:
+        - text: Security
+        - text: JWT · RBAC · Fernet
+      - paragraph [ref=e259]: CollectorScheduler
+      - paragraph [ref=e266]: MLAnalysisJob
+      - paragraph [ref=e273]:
+        - text: MetricsCollector
+        - text: SSH → CPU/RAM/disk/net/IO
+      - paragraph [ref=e280]: ContainerCollector
+      - paragraph [ref=e287]:
+        - text: Detector
+        - text: LSTM-Autoencoder
+      - paragraph [ref=e294]:
+        - text: Classifier
+        - text: CNN-LSTM
+      - paragraph [ref=e301]:
+        - text: Explainer
+        - text: SHAP
+      - paragraph [ref=e308]:
+        - text: Recommender
+        - text: LLM + allow-list
+      - paragraph [ref=e315]:
+        - text: Registry
+        - text: модели + scaler
+      - paragraph [ref=e322]:
+        - text: servers · metrics · alerts ·
+        - text: notifications · audit · users ·
+        - text: console · containers · cache
+      - paragraph [ref=e329]: PostgreSQL + TimescaleDB
+      - paragraph [ref=e336]: Redis
+      - paragraph [ref=e343]:
+        - text: Артефакты моделей
+        - text: LSTM-AE · CNN-LSTM · scalers
+      - paragraph [ref=e350]:
+        - text: Ollama
+        - text: локальная LLM

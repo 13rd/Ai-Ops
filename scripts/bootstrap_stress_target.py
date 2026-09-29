@@ -1,27 +1,27 @@
-"""Register the stress-target Docker container as a server and prep the scaler."""
 from __future__ import annotations
 
 import asyncio
 import logging
-import shutil
-from pathlib import Path
+import os
 
 from sqlalchemy import select
 
 from app.core.secrets import get_secrets_manager
 from app.db.base import AsyncSessionLocal
 from app.models.server import Server, ServerStatus
+from ml.calibration import calibrate_from_db
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger("bootstrap_stress_target")
 
 NAME = "stress-target"
-HOST = "127.0.0.1"
-PORT = 2224
+# In full docker-compose the backend reaches the target by service DNS name
+# (stress-target:22). From a host-run backend use 127.0.0.1:2224 instead:
+#   STRESS_TARGET_HOST=127.0.0.1 STRESS_TARGET_PORT=2224 python scripts/bootstrap_stress_target.py
+HOST = os.getenv("STRESS_TARGET_HOST", "stress-target")
+PORT = int(os.getenv("STRESS_TARGET_PORT", "22"))
 USER = "demo"
 PASSWORD = "demopass"
-SOURCE_SCALER = "clean-1.pkl"
-
 
 async def _ensure_server() -> int:
     secrets = get_secrets_manager()
@@ -50,26 +50,15 @@ async def _ensure_server() -> int:
             log.info("✓ %s server updated (id=%d)", NAME, srv.id)
         return srv.id
 
-
-def _copy_scaler() -> None:
-    src = Path("models/scalers") / SOURCE_SCALER
-    dst = Path("models/scalers") / f"{NAME}.pkl"
-    if not src.exists():
-        raise SystemExit(f"Source scaler {src} missing — train models first.")
-    if dst.exists():
-        log.info("✓ %s already present", dst)
-        return
-    shutil.copy2(src, dst)
-    log.info("✓ %s copied from %s", dst, src)
-
-
 async def main() -> None:
     sid = await _ensure_server()
-    _copy_scaler()
+    scaler = await calibrate_from_db(NAME)
+    if scaler is None:
+        log.info("⚠ scaler not yet fitted — collect normal metrics, then run:")
+        log.info("    python -m ml.calibration %s", NAME)
     log.info("Bootstrap complete (server_id=%d).", sid)
     log.info("Next:  docker compose up -d stress-target")
     log.info("       tail -f server.log | grep -E 'stress-target|MLAnalysis'")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,4 +1,3 @@
-"""Evaluate AE precision/recall + classifier macro-F1 on test split."""
 from __future__ import annotations
 
 import argparse
@@ -16,7 +15,6 @@ from sklearn.metrics import (
 from tensorflow import keras
 
 from ml.config import CLASSES, label_to_index
-
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
@@ -62,7 +60,6 @@ def main() -> None:
     Path(args.out).write_text(json.dumps(payload, indent=2))
     print(json.dumps({k: v for k, v in payload.items() if k != "classification_report"}, indent=2))
     print(report)
-
 
 if __name__ == "__main__":
     main()
