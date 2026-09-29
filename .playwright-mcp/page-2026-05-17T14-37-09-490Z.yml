@@ -1,0 +1,23 @@
+- generic [ref=e2]:
+  - generic [ref=e215]:
+    - generic [ref=e216]:
+      - heading "Server Monitor" [level=5] [ref=e217]
+      - paragraph [ref=e218]: Sign in to continue
+    - generic [ref=e219]:
+      - generic [ref=e220]:
+        - generic [ref=e221]: Username
+        - generic [ref=e222]:
+          - textbox "Username" [active] [ref=e223]
+          - group:
+            - generic: Username
+      - generic [ref=e224]:
+        - generic: Password
+        - generic [ref=e225]:
+          - textbox "Password" [ref=e226]
+          - group:
+            - generic: Password
+      - button "Sign in" [ref=e227] [cursor=pointer]
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e228] [cursor=pointer]:
+      - img [ref=e58]

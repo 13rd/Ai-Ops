@@ -1,0 +1,45 @@
+- document [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - paragraph [ref=e13]: Хранение
+      - paragraph [ref=e20]: Сервер приложения — FastAPI (async)
+      - paragraph [ref=e27]: Пользователи
+      - paragraph [ref=e34]: Гибридный ML-конвейер
+    - generic [ref=e47]:
+      - paragraph [ref=e53]: HTTPS
+      - paragraph [ref=e59]: SSH
+      - paragraph [ref=e65]: запрос
+      - paragraph [ref=e71]: алерты
+      - paragraph [ref=e77]: запросы
+      - paragraph [ref=e83]: окна метрик
+      - paragraph [ref=e89]: аномалии + рекомендации
+    - generic [ref=e90]:
+      - paragraph [ref=e97]: Web-интерфейс — React SPA
+      - paragraph [ref=e104]: Telegram
+      - paragraph [ref=e111]: Grafana
+      - paragraph [ref=e118]: Nginx — reverse proxy + статика
+      - paragraph [ref=e125]:
+        - text: REST API + WebSocket
+        - text: авторизация · JWT · RBAC
+      - paragraph [ref=e132]:
+        - text: Сбор метрик
+        - text: "планировщик → SSH:"
+        - text: CPU · RAM · диск · сеть · контейнеры
+      - paragraph [ref=e139]:
+        - text: LSTM-Autoencoder
+        - text: обнаружение
+      - paragraph [ref=e146]:
+        - text: CNN-LSTM
+        - text: классификация
+      - paragraph [ref=e153]:
+        - text: SHAP
+        - text: объяснение
+      - paragraph [ref=e160]:
+        - text: LLM
+        - text: рекомендация
+      - paragraph [ref=e167]: Целевые серверы
+      - paragraph [ref=e174]:
+        - text: PostgreSQL
+        - text: TimescaleDB
+      - paragraph [ref=e181]: Redis
+      - paragraph [ref=e188]: Ollama LLM

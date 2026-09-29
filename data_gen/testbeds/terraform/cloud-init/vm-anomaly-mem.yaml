@@ -1,0 +1,22 @@
+#cloud-config
+# vm-anomaly-mem: 4vCPU, 16GB RAM — memory_leak + container_crash scenarios
+# Swap is disabled so memory_leak scenarios reach OOM threshold naturally.
+package_update: true
+package_upgrade: false
+packages:
+  - stress-ng
+  - docker.io
+  - iproute2
+  - net-tools
+  - curl
+
+runcmd:
+  - swapoff -a
+  - sed -i '/swap/d' /etc/fstab
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker ubuntu
+  - docker pull nginx:alpine
+  # No --restart so container_crash scenario leaves it dead for the full down period
+  - docker run -d --name test-app --memory=2g --restart no -p 8080:80 nginx:alpine
+  - echo "ubuntu:testbed123" | chpasswd

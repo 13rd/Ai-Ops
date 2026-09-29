@@ -1,0 +1,88 @@
+- generic [ref=e2]:
+  - generic [ref=e106]:
+    - banner [ref=e107]:
+      - generic [ref=e108]:
+        - heading "Server Monitor" [level=6] [ref=e109]
+        - button "Notifications" [ref=e110] [cursor=pointer]:
+          - img [ref=e111]
+        - button "smoke_phase0_user" [ref=e113] [cursor=pointer]:
+          - generic [ref=e114]: S
+    - navigation [ref=e115]:
+      - generic [ref=e117]:
+        - heading "Server Monitor" [level=6] [ref=e119]
+        - separator [ref=e120]
+        - list [ref=e121]:
+          - button "Dashboard" [ref=e122] [cursor=pointer]:
+            - img [ref=e124]
+            - generic [ref=e127]: Dashboard
+          - button "Servers" [ref=e128] [cursor=pointer]:
+            - img [ref=e130]
+            - generic [ref=e133]: Servers
+          - button "Anomalies" [ref=e134] [cursor=pointer]:
+            - img [ref=e136]
+            - generic [ref=e139]: Anomalies
+          - button "Notifications" [ref=e140] [cursor=pointer]:
+            - img [ref=e142]
+            - generic [ref=e145]: Notifications
+          - button "Users" [ref=e146] [cursor=pointer]:
+            - img [ref=e148]
+            - generic [ref=e151]: Users
+          - button "Audit Log" [ref=e152] [cursor=pointer]:
+            - img [ref=e154]
+            - generic [ref=e157]: Audit Log
+          - button "Reports" [ref=e158] [cursor=pointer]:
+            - img [ref=e160]
+            - generic [ref=e163]: Reports
+    - main [ref=e164]:
+      - generic [ref=e279]:
+        - button "Servers" [ref=e281] [cursor=pointer]:
+          - img [ref=e283]
+          - text: Servers
+        - generic [ref=e285]:
+          - generic [ref=e286]:
+            - generic [ref=e287]:
+              - heading "prod-web-01" [level=5] [ref=e288]
+              - img [ref=e289]
+              - paragraph [ref=e291]: offline
+            - paragraph [ref=e292]: 10.0.0.100:22
+          - generic [ref=e293]:
+            - button "Test" [ref=e294] [cursor=pointer]:
+              - img [ref=e296]
+              - text: Test
+            - button "Console" [ref=e298] [cursor=pointer]:
+              - img [ref=e300]
+              - text: Console
+            - button "Edit" [ref=e302] [cursor=pointer]:
+              - img [ref=e304]
+              - text: Edit
+            - button "Delete" [ref=e306] [cursor=pointer]:
+              - img [ref=e308]
+              - text: Delete
+        - generic [ref=e311]:
+          - generic [ref=e312]:
+            - text: Environment
+            - paragraph [ref=e313]: prod
+          - generic [ref=e314]:
+            - text: Last seen
+            - paragraph [ref=e315]: Never
+          - generic [ref=e316]:
+            - text: Created
+            - paragraph [ref=e317]: 2026-05-17 14:45
+          - generic [ref=e318]:
+            - text: Tags
+            - generic [ref=e319]:
+              - generic [ref=e321]: nginx
+              - generic [ref=e323]: web
+              - generic [ref=e325]: linux
+        - tablist [ref=e328]:
+          - tab "Overview" [selected] [ref=e329] [cursor=pointer]
+          - tab "Anomalies" [ref=e330] [cursor=pointer]
+          - tab "Audit" [ref=e331] [cursor=pointer]
+        - generic [ref=e334]:
+          - paragraph [ref=e336]: Metrics charts — available in Phase 4
+          - separator [ref=e337]
+          - paragraph [ref=e339]: Container list — available in Phase 5
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e57] [cursor=pointer]:
+      - img [ref=e58]

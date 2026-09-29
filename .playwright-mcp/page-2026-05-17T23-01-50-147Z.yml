@@ -1,0 +1,706 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e7]:
+      - banner [ref=e8]:
+        - generic [ref=e9]:
+          - heading "Server Monitor" [level=6] [ref=e10]
+          - button "Notifications" [ref=e11] [cursor=pointer]:
+            - img [ref=e13]
+          - button "admin" [ref=e15] [cursor=pointer]:
+            - generic [ref=e16]: A
+      - navigation [ref=e17]:
+        - generic [ref=e19]:
+          - heading "Server Monitor" [level=6] [ref=e21]
+          - separator [ref=e22]
+          - list [ref=e23]:
+            - button "Dashboard" [ref=e24] [cursor=pointer]:
+              - img [ref=e26]
+              - generic [ref=e29]: Dashboard
+            - button "Servers" [ref=e30] [cursor=pointer]:
+              - img [ref=e32]
+              - generic [ref=e35]: Servers
+            - button "Anomalies" [ref=e36] [cursor=pointer]:
+              - img [ref=e38]
+              - generic [ref=e41]: Anomalies
+            - button "Notifications" [ref=e42] [cursor=pointer]:
+              - img [ref=e44]
+              - generic [ref=e47]: Notifications
+            - button "Users" [ref=e48] [cursor=pointer]:
+              - img [ref=e50]
+              - generic [ref=e53]: Users
+            - button "Audit Log" [ref=e54] [cursor=pointer]:
+              - img [ref=e56]
+              - generic [ref=e59]: Audit Log
+            - button "Reports" [ref=e60] [cursor=pointer]:
+              - img [ref=e62]
+              - generic [ref=e65]: Reports
+      - main [ref=e66]:
+        - generic [ref=e68]:
+          - button "Servers" [ref=e70] [cursor=pointer]:
+            - img [ref=e72]
+            - text: Servers
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - heading "testbed-server-a" [level=5] [ref=e77]
+                - img [ref=e78]
+                - paragraph [ref=e80]: online
+              - paragraph [ref=e81]: localhost:2221
+            - generic [ref=e82]:
+              - button "Test" [ref=e83] [cursor=pointer]:
+                - img [ref=e85]
+                - text: Test
+              - button "Console" [ref=e87] [cursor=pointer]:
+                - img [ref=e89]
+                - text: Console
+              - button "Edit" [ref=e91] [cursor=pointer]:
+                - img [ref=e93]
+                - text: Edit
+              - button "Delete" [ref=e95] [cursor=pointer]:
+                - img [ref=e97]
+                - text: Delete
+          - generic [ref=e100]:
+            - generic [ref=e101]:
+              - text: Environment
+              - paragraph [ref=e102]: dev
+            - generic [ref=e103]:
+              - text: Last seen
+              - paragraph [ref=e104]: 4 hours ago
+            - generic [ref=e105]:
+              - text: Created
+              - paragraph [ref=e106]: 2026-05-16 20:42
+            - generic [ref=e107]:
+              - text: Tags
+              - paragraph [ref=e109]: —
+          - tablist [ref=e112]:
+            - tab "Overview" [selected] [ref=e113] [cursor=pointer]
+            - tab "Anomalies" [ref=e114] [cursor=pointer]
+            - tab "Audit" [ref=e115] [cursor=pointer]
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - heading "Metrics" [level=6] [ref=e120]
+              - group [ref=e121]:
+                - button "1h" [ref=e122] [cursor=pointer]
+                - button "24h" [ref=e123] [cursor=pointer]: 24h
+                - button "7d" [active] [ref=e124] [cursor=pointer]: 7d
+                - button "30d" [ref=e125] [cursor=pointer]
+            - generic [ref=e126]:
+              - generic [ref=e129]:
+                - generic [ref=e130]: CPU Usage (%)
+                - application [ref=e1218]:
+                  - generic [ref=e1229]:
+                    - generic [ref=e1230]:
+                      - generic [ref=e1232]: 05/17
+                      - generic [ref=e1234]: 05/17
+                      - generic [ref=e1236]: 05/17
+                      - generic [ref=e1238]: 05/17
+                      - generic [ref=e1240]: 05/17
+                      - generic [ref=e1242]: 05/17
+                    - generic [ref=e1243]:
+                      - generic [ref=e1245]: 0%
+                      - generic [ref=e1247]: 25%
+                      - generic [ref=e1249]: 50%
+                      - generic [ref=e1251]: 75%
+                      - generic [ref=e1253]: 100%
+                    - generic [ref=e1254]: 90%
+              - generic [ref=e173]:
+                - generic [ref=e174]: Memory Usage (%)
+                - application [ref=e1257]:
+                  - generic [ref=e1268]:
+                    - generic [ref=e1269]:
+                      - generic [ref=e1271]: 05/17
+                      - generic [ref=e1273]: 05/17
+                      - generic [ref=e1275]: 05/17
+                      - generic [ref=e1277]: 05/17
+                      - generic [ref=e1279]: 05/17
+                      - generic [ref=e1281]: 05/17
+                    - generic [ref=e1282]:
+                      - generic [ref=e1284]: 0%
+                      - generic [ref=e1286]: 25%
+                      - generic [ref=e1288]: 50%
+                      - generic [ref=e1290]: 75%
+                      - generic [ref=e1292]: 100%
+                    - generic [ref=e1293]: 90%
+              - generic [ref=e214]:
+                - generic [ref=e215]: Disk Usage (%)
+                - application [ref=e1296]:
+                  - generic [ref=e1306]:
+                    - generic [ref=e1307]:
+                      - generic [ref=e1309]: 05/17
+                      - generic [ref=e1311]: 05/17
+                      - generic [ref=e1313]: 05/17
+                      - generic [ref=e1315]: 05/17
+                      - generic [ref=e1317]: 05/17
+                      - generic [ref=e1319]: 05/17
+                    - generic [ref=e1320]:
+                      - generic [ref=e1322]: 0%
+                      - generic [ref=e1324]: 25%
+                      - generic [ref=e1326]: 50%
+                      - generic [ref=e1328]: 75%
+                      - generic [ref=e1330]: 100%
+                    - generic [ref=e1331]: 85%
+              - generic [ref=e254]:
+                - generic [ref=e255]: Network In (B/s)
+                - application [ref=e1334]:
+                  - generic [ref=e1345]:
+                    - generic [ref=e1346]:
+                      - generic [ref=e1348]: 05/17
+                      - generic [ref=e1350]: 05/17
+                      - generic [ref=e1352]: 05/17
+                      - generic [ref=e1354]: 05/17
+                      - generic [ref=e1356]: 05/17
+                      - generic [ref=e1358]: 05/17
+                    - generic [ref=e1359]:
+                      - generic [ref=e1361]: "0"
+                      - generic [ref=e1363]: 81M
+                      - generic [ref=e1365]: 162M
+                      - generic [ref=e1367]: 243M
+                      - generic [ref=e1369]: 324M
+            - separator [ref=e292]
+            - generic [ref=e293]:
+              - heading "Containers" [level=6] [ref=e294]
+              - table [ref=e296]:
+                - rowgroup [ref=e297]:
+                  - row "Name Image Status CPU% Memory Restarts Actions" [ref=e298]:
+                    - columnheader "Name" [ref=e299]
+                    - columnheader "Image" [ref=e300]
+                    - columnheader "Status" [ref=e301]
+                    - columnheader "CPU%" [ref=e302]
+                    - columnheader "Memory" [ref=e303]
+                    - columnheader "Restarts" [ref=e304]
+                    - columnheader "Actions" [ref=e305]
+                - rowgroup [ref=e306]:
+                  - row "trainbed-web 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e307]:
+                    - cell "trainbed-web" [ref=e308]:
+                      - paragraph [ref=e309]: trainbed-web
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e310]
+                    - cell "exited" [ref=e311]:
+                      - generic [ref=e313]: exited
+                    - cell "—" [ref=e314]
+                    - cell "—" [ref=e315]
+                    - cell "—" [ref=e316]
+                    - cell "Start Stop Restart Delete" [ref=e317]:
+                      - generic [ref=e318]:
+                        - generic "Start" [ref=e319]:
+                          - button [ref=e320] [cursor=pointer]:
+                            - img [ref=e321]
+                        - generic "Stop" [ref=e323]:
+                          - button [ref=e324] [cursor=pointer]:
+                            - img [ref=e325]
+                        - generic "Restart" [ref=e327]:
+                          - button [ref=e328] [cursor=pointer]:
+                            - img [ref=e329]
+                        - generic "Delete" [ref=e331]:
+                          - button [ref=e332] [cursor=pointer]:
+                            - img [ref=e333]
+                  - row "trainbed-storage 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e335]:
+                    - cell "trainbed-storage" [ref=e336]:
+                      - paragraph [ref=e337]: trainbed-storage
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e338]
+                    - cell "exited" [ref=e339]:
+                      - generic [ref=e341]: exited
+                    - cell "—" [ref=e342]
+                    - cell "—" [ref=e343]
+                    - cell "—" [ref=e344]
+                    - cell "Start Stop Restart Delete" [ref=e345]:
+                      - generic [ref=e346]:
+                        - generic "Start" [ref=e347]:
+                          - button [ref=e348] [cursor=pointer]:
+                            - img [ref=e349]
+                        - generic "Stop" [ref=e351]:
+                          - button [ref=e352] [cursor=pointer]:
+                            - img [ref=e353]
+                        - generic "Restart" [ref=e355]:
+                          - button [ref=e356] [cursor=pointer]:
+                            - img [ref=e357]
+                        - generic "Delete" [ref=e359]:
+                          - button [ref=e360] [cursor=pointer]:
+                            - img [ref=e361]
+                  - row "trainbed-db 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e363]:
+                    - cell "trainbed-db" [ref=e364]:
+                      - paragraph [ref=e365]: trainbed-db
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e366]
+                    - cell "exited" [ref=e367]:
+                      - generic [ref=e369]: exited
+                    - cell "—" [ref=e370]
+                    - cell "—" [ref=e371]
+                    - cell "—" [ref=e372]
+                    - cell "Start Stop Restart Delete" [ref=e373]:
+                      - generic [ref=e374]:
+                        - generic "Start" [ref=e375]:
+                          - button [ref=e376] [cursor=pointer]:
+                            - img [ref=e377]
+                        - generic "Stop" [ref=e379]:
+                          - button [ref=e380] [cursor=pointer]:
+                            - img [ref=e381]
+                        - generic "Restart" [ref=e383]:
+                          - button [ref=e384] [cursor=pointer]:
+                            - img [ref=e385]
+                        - generic "Delete" [ref=e387]:
+                          - button [ref=e388] [cursor=pointer]:
+                            - img [ref=e389]
+                  - row "trainbed-worker 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e391]:
+                    - cell "trainbed-worker" [ref=e392]:
+                      - paragraph [ref=e393]: trainbed-worker
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e394]
+                    - cell "exited" [ref=e395]:
+                      - generic [ref=e397]: exited
+                    - cell "—" [ref=e398]
+                    - cell "—" [ref=e399]
+                    - cell "—" [ref=e400]
+                    - cell "Start Stop Restart Delete" [ref=e401]:
+                      - generic [ref=e402]:
+                        - generic "Start" [ref=e403]:
+                          - button [ref=e404] [cursor=pointer]:
+                            - img [ref=e405]
+                        - generic "Stop" [ref=e407]:
+                          - button [ref=e408] [cursor=pointer]:
+                            - img [ref=e409]
+                        - generic "Restart" [ref=e411]:
+                          - button [ref=e412] [cursor=pointer]:
+                            - img [ref=e413]
+                        - generic "Delete" [ref=e415]:
+                          - button [ref=e416] [cursor=pointer]:
+                            - img [ref=e417]
+                  - row "trainbed-monitor 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e419]:
+                    - cell "trainbed-monitor" [ref=e420]:
+                      - paragraph [ref=e421]: trainbed-monitor
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e422]
+                    - cell "exited" [ref=e423]:
+                      - generic [ref=e425]: exited
+                    - cell "—" [ref=e426]
+                    - cell "—" [ref=e427]
+                    - cell "—" [ref=e428]
+                    - cell "Start Stop Restart Delete" [ref=e429]:
+                      - generic [ref=e430]:
+                        - generic "Start" [ref=e431]:
+                          - button [ref=e432] [cursor=pointer]:
+                            - img [ref=e433]
+                        - generic "Stop" [ref=e435]:
+                          - button [ref=e436] [cursor=pointer]:
+                            - img [ref=e437]
+                        - generic "Restart" [ref=e439]:
+                          - button [ref=e440] [cursor=pointer]:
+                            - img [ref=e441]
+                        - generic "Delete" [ref=e443]:
+                          - button [ref=e444] [cursor=pointer]:
+                            - img [ref=e445]
+                  - row "trainbed-lb 13imp/server-monitor-trainbed:latest exited — — — Start Stop Restart Delete" [ref=e447]:
+                    - cell "trainbed-lb" [ref=e448]:
+                      - paragraph [ref=e449]: trainbed-lb
+                    - cell "13imp/server-monitor-trainbed:latest" [ref=e450]
+                    - cell "exited" [ref=e451]:
+                      - generic [ref=e453]: exited
+                    - cell "—" [ref=e454]
+                    - cell "—" [ref=e455]
+                    - cell "—" [ref=e456]
+                    - cell "Start Stop Restart Delete" [ref=e457]:
+                      - generic [ref=e458]:
+                        - generic "Start" [ref=e459]:
+                          - button [ref=e460] [cursor=pointer]:
+                            - img [ref=e461]
+                        - generic "Stop" [ref=e463]:
+                          - button [ref=e464] [cursor=pointer]:
+                            - img [ref=e465]
+                        - generic "Restart" [ref=e467]:
+                          - button [ref=e468] [cursor=pointer]:
+                            - img [ref=e469]
+                        - generic "Delete" [ref=e471]:
+                          - button [ref=e472] [cursor=pointer]:
+                            - img [ref=e473]
+                  - row "trainbed_db postgres:15-alpine exited — — — Start Stop Restart Delete" [ref=e475]:
+                    - cell "trainbed_db" [ref=e476]:
+                      - paragraph [ref=e477]: trainbed_db
+                    - cell "postgres:15-alpine" [ref=e478]
+                    - cell "exited" [ref=e479]:
+                      - generic [ref=e481]: exited
+                    - cell "—" [ref=e482]
+                    - cell "—" [ref=e483]
+                    - cell "—" [ref=e484]
+                    - cell "Start Stop Restart Delete" [ref=e485]:
+                      - generic [ref=e486]:
+                        - generic "Start" [ref=e487]:
+                          - button [ref=e488] [cursor=pointer]:
+                            - img [ref=e489]
+                        - generic "Stop" [ref=e491]:
+                          - button [ref=e492] [cursor=pointer]:
+                            - img [ref=e493]
+                        - generic "Restart" [ref=e495]:
+                          - button [ref=e496] [cursor=pointer]:
+                            - img [ref=e497]
+                        - generic "Delete" [ref=e499]:
+                          - button [ref=e500] [cursor=pointer]:
+                            - img [ref=e501]
+                  - row "testbed-app-c nginx:alpine running — — — Start Stop Restart Delete" [ref=e503]:
+                    - cell "testbed-app-c" [ref=e504]:
+                      - paragraph [ref=e505]: testbed-app-c
+                    - cell "nginx:alpine" [ref=e506]
+                    - cell "running" [ref=e507]:
+                      - generic [ref=e509]: running
+                    - cell "—" [ref=e510]
+                    - cell "—" [ref=e511]
+                    - cell "—" [ref=e512]
+                    - cell "Start Stop Restart Delete" [ref=e513]:
+                      - generic [ref=e514]:
+                        - generic "Start" [ref=e515]:
+                          - button [ref=e516] [cursor=pointer]:
+                            - img [ref=e517]
+                        - generic "Stop" [ref=e519]:
+                          - button [ref=e520] [cursor=pointer]:
+                            - img [ref=e521]
+                        - generic "Restart" [ref=e523]:
+                          - button [ref=e524] [cursor=pointer]:
+                            - img [ref=e525]
+                        - generic "Delete" [ref=e527]:
+                          - button [ref=e528] [cursor=pointer]:
+                            - img [ref=e529]
+                  - row "testbed-app-a nginx:alpine running — — — Start Stop Restart Delete" [ref=e531]:
+                    - cell "testbed-app-a" [ref=e532]:
+                      - paragraph [ref=e533]: testbed-app-a
+                    - cell "nginx:alpine" [ref=e534]
+                    - cell "running" [ref=e535]:
+                      - generic [ref=e537]: running
+                    - cell "—" [ref=e538]
+                    - cell "—" [ref=e539]
+                    - cell "—" [ref=e540]
+                    - cell "Start Stop Restart Delete" [ref=e541]:
+                      - generic [ref=e542]:
+                        - generic "Start" [ref=e543]:
+                          - button [ref=e544] [cursor=pointer]:
+                            - img [ref=e545]
+                        - generic "Stop" [ref=e547]:
+                          - button [ref=e548] [cursor=pointer]:
+                            - img [ref=e549]
+                        - generic "Restart" [ref=e551]:
+                          - button [ref=e552] [cursor=pointer]:
+                            - img [ref=e553]
+                        - generic "Delete" [ref=e555]:
+                          - button [ref=e556] [cursor=pointer]:
+                            - img [ref=e557]
+                  - row "testbed-app-b nginx:alpine exited — — — Start Stop Restart Delete" [ref=e559]:
+                    - cell "testbed-app-b" [ref=e560]:
+                      - paragraph [ref=e561]: testbed-app-b
+                    - cell "nginx:alpine" [ref=e562]
+                    - cell "exited" [ref=e563]:
+                      - generic [ref=e565]: exited
+                    - cell "—" [ref=e566]
+                    - cell "—" [ref=e567]
+                    - cell "—" [ref=e568]
+                    - cell "Start Stop Restart Delete" [ref=e569]:
+                      - generic [ref=e570]:
+                        - generic "Start" [ref=e571]:
+                          - button [ref=e572] [cursor=pointer]:
+                            - img [ref=e573]
+                        - generic "Stop" [ref=e575]:
+                          - button [ref=e576] [cursor=pointer]:
+                            - img [ref=e577]
+                        - generic "Restart" [ref=e579]:
+                          - button [ref=e580] [cursor=pointer]:
+                            - img [ref=e581]
+                        - generic "Delete" [ref=e583]:
+                          - button [ref=e584] [cursor=pointer]:
+                            - img [ref=e585]
+                  - row "testbed-server-c ubuntu:22.04 running — — — Start Stop Restart Delete" [ref=e587]:
+                    - cell "testbed-server-c" [ref=e588]:
+                      - paragraph [ref=e589]: testbed-server-c
+                    - cell "ubuntu:22.04" [ref=e590]
+                    - cell "running" [ref=e591]:
+                      - generic [ref=e593]: running
+                    - cell "—" [ref=e594]
+                    - cell "—" [ref=e595]
+                    - cell "—" [ref=e596]
+                    - cell "Start Stop Restart Delete" [ref=e597]:
+                      - generic [ref=e598]:
+                        - generic "Start" [ref=e599]:
+                          - button [ref=e600] [cursor=pointer]:
+                            - img [ref=e601]
+                        - generic "Stop" [ref=e603]:
+                          - button [ref=e604] [cursor=pointer]:
+                            - img [ref=e605]
+                        - generic "Restart" [ref=e607]:
+                          - button [ref=e608] [cursor=pointer]:
+                            - img [ref=e609]
+                        - generic "Delete" [ref=e611]:
+                          - button [ref=e612] [cursor=pointer]:
+                            - img [ref=e613]
+                  - row "testbed-server-a ubuntu:22.04 running — — — Start Stop Restart Delete" [ref=e615]:
+                    - cell "testbed-server-a" [ref=e616]:
+                      - paragraph [ref=e617]: testbed-server-a
+                    - cell "ubuntu:22.04" [ref=e618]
+                    - cell "running" [ref=e619]:
+                      - generic [ref=e621]: running
+                    - cell "—" [ref=e622]
+                    - cell "—" [ref=e623]
+                    - cell "—" [ref=e624]
+                    - cell "Start Stop Restart Delete" [ref=e625]:
+                      - generic [ref=e626]:
+                        - generic "Start" [ref=e627]:
+                          - button [ref=e628] [cursor=pointer]:
+                            - img [ref=e629]
+                        - generic "Stop" [ref=e631]:
+                          - button [ref=e632] [cursor=pointer]:
+                            - img [ref=e633]
+                        - generic "Restart" [ref=e635]:
+                          - button [ref=e636] [cursor=pointer]:
+                            - img [ref=e637]
+                        - generic "Delete" [ref=e639]:
+                          - button [ref=e640] [cursor=pointer]:
+                            - img [ref=e641]
+                  - row "testbed-server-b ubuntu:22.04 running — — — Start Stop Restart Delete" [ref=e643]:
+                    - cell "testbed-server-b" [ref=e644]:
+                      - paragraph [ref=e645]: testbed-server-b
+                    - cell "ubuntu:22.04" [ref=e646]
+                    - cell "running" [ref=e647]:
+                      - generic [ref=e649]: running
+                    - cell "—" [ref=e650]
+                    - cell "—" [ref=e651]
+                    - cell "—" [ref=e652]
+                    - cell "Start Stop Restart Delete" [ref=e653]:
+                      - generic [ref=e654]:
+                        - generic "Start" [ref=e655]:
+                          - button [ref=e656] [cursor=pointer]:
+                            - img [ref=e657]
+                        - generic "Stop" [ref=e659]:
+                          - button [ref=e660] [cursor=pointer]:
+                            - img [ref=e661]
+                        - generic "Restart" [ref=e663]:
+                          - button [ref=e664] [cursor=pointer]:
+                            - img [ref=e665]
+                        - generic "Delete" [ref=e667]:
+                          - button [ref=e668] [cursor=pointer]:
+                            - img [ref=e669]
+                  - row "unmatched-game unmatched_js_table-unmatched-game exited — — — Start Stop Restart Delete" [ref=e671]:
+                    - cell "unmatched-game" [ref=e672]:
+                      - paragraph [ref=e673]: unmatched-game
+                    - cell "unmatched_js_table-unmatched-game" [ref=e674]
+                    - cell "exited" [ref=e675]:
+                      - generic [ref=e677]: exited
+                    - cell "—" [ref=e678]
+                    - cell "—" [ref=e679]
+                    - cell "—" [ref=e680]
+                    - cell "Start Stop Restart Delete" [ref=e681]:
+                      - generic [ref=e682]:
+                        - generic "Start" [ref=e683]:
+                          - button [ref=e684] [cursor=pointer]:
+                            - img [ref=e685]
+                        - generic "Stop" [ref=e687]:
+                          - button [ref=e688] [cursor=pointer]:
+                            - img [ref=e689]
+                        - generic "Restart" [ref=e691]:
+                          - button [ref=e692] [cursor=pointer]:
+                            - img [ref=e693]
+                        - generic "Delete" [ref=e695]:
+                          - button [ref=e696] [cursor=pointer]:
+                            - img [ref=e697]
+                  - row "server_monitor_backend diploma_backend exited — — — Start Stop Restart Delete" [ref=e699]:
+                    - cell "server_monitor_backend" [ref=e700]:
+                      - paragraph [ref=e701]: server_monitor_backend
+                    - cell "diploma_backend" [ref=e702]
+                    - cell "exited" [ref=e703]:
+                      - generic [ref=e705]: exited
+                    - cell "—" [ref=e706]
+                    - cell "—" [ref=e707]
+                    - cell "—" [ref=e708]
+                    - cell "Start Stop Restart Delete" [ref=e709]:
+                      - generic [ref=e710]:
+                        - generic "Start" [ref=e711]:
+                          - button [ref=e712] [cursor=pointer]:
+                            - img [ref=e713]
+                        - generic "Stop" [ref=e715]:
+                          - button [ref=e716] [cursor=pointer]:
+                            - img [ref=e717]
+                        - generic "Restart" [ref=e719]:
+                          - button [ref=e720] [cursor=pointer]:
+                            - img [ref=e721]
+                        - generic "Delete" [ref=e723]:
+                          - button [ref=e724] [cursor=pointer]:
+                            - img [ref=e725]
+                  - row "server_monitor_db postgres:15-alpine exited — — — Start Stop Restart Delete" [ref=e727]:
+                    - cell "server_monitor_db" [ref=e728]:
+                      - paragraph [ref=e729]: server_monitor_db
+                    - cell "postgres:15-alpine" [ref=e730]
+                    - cell "exited" [ref=e731]:
+                      - generic [ref=e733]: exited
+                    - cell "—" [ref=e734]
+                    - cell "—" [ref=e735]
+                    - cell "—" [ref=e736]
+                    - cell "Start Stop Restart Delete" [ref=e737]:
+                      - generic [ref=e738]:
+                        - generic "Start" [ref=e739]:
+                          - button [ref=e740] [cursor=pointer]:
+                            - img [ref=e741]
+                        - generic "Stop" [ref=e743]:
+                          - button [ref=e744] [cursor=pointer]:
+                            - img [ref=e745]
+                        - generic "Restart" [ref=e747]:
+                          - button [ref=e748] [cursor=pointer]:
+                            - img [ref=e749]
+                        - generic "Delete" [ref=e751]:
+                          - button [ref=e752] [cursor=pointer]:
+                            - img [ref=e753]
+                  - row "pgadmin dpage/pgadmin4 exited — — — Start Stop Restart Delete" [ref=e755]:
+                    - cell "pgadmin" [ref=e756]:
+                      - paragraph [ref=e757]: pgadmin
+                    - cell "dpage/pgadmin4" [ref=e758]
+                    - cell "exited" [ref=e759]:
+                      - generic [ref=e761]: exited
+                    - cell "—" [ref=e762]
+                    - cell "—" [ref=e763]
+                    - cell "—" [ref=e764]
+                    - cell "Start Stop Restart Delete" [ref=e765]:
+                      - generic [ref=e766]:
+                        - generic "Start" [ref=e767]:
+                          - button [ref=e768] [cursor=pointer]:
+                            - img [ref=e769]
+                        - generic "Stop" [ref=e771]:
+                          - button [ref=e772] [cursor=pointer]:
+                            - img [ref=e773]
+                        - generic "Restart" [ref=e775]:
+                          - button [ref=e776] [cursor=pointer]:
+                            - img [ref=e777]
+                        - generic "Delete" [ref=e779]:
+                          - button [ref=e780] [cursor=pointer]:
+                            - img [ref=e781]
+                  - row "test-db postgres:14.1-alpine exited — — — Start Stop Restart Delete" [ref=e783]:
+                    - cell "test-db" [ref=e784]:
+                      - paragraph [ref=e785]: test-db
+                    - cell "postgres:14.1-alpine" [ref=e786]
+                    - cell "exited" [ref=e787]:
+                      - generic [ref=e789]: exited
+                    - cell "—" [ref=e790]
+                    - cell "—" [ref=e791]
+                    - cell "—" [ref=e792]
+                    - cell "Start Stop Restart Delete" [ref=e793]:
+                      - generic [ref=e794]:
+                        - generic "Start" [ref=e795]:
+                          - button [ref=e796] [cursor=pointer]:
+                            - img [ref=e797]
+                        - generic "Stop" [ref=e799]:
+                          - button [ref=e800] [cursor=pointer]:
+                            - img [ref=e801]
+                        - generic "Restart" [ref=e803]:
+                          - button [ref=e804] [cursor=pointer]:
+                            - img [ref=e805]
+                        - generic "Delete" [ref=e807]:
+                          - button [ref=e808] [cursor=pointer]:
+                            - img [ref=e809]
+                  - row "db postgres:14.1-alpine exited — — — Start Stop Restart Delete" [ref=e811]:
+                    - cell "db" [ref=e812]:
+                      - paragraph [ref=e813]: db
+                    - cell "postgres:14.1-alpine" [ref=e814]
+                    - cell "exited" [ref=e815]:
+                      - generic [ref=e817]: exited
+                    - cell "—" [ref=e818]
+                    - cell "—" [ref=e819]
+                    - cell "—" [ref=e820]
+                    - cell "Start Stop Restart Delete" [ref=e821]:
+                      - generic [ref=e822]:
+                        - generic "Start" [ref=e823]:
+                          - button [ref=e824] [cursor=pointer]:
+                            - img [ref=e825]
+                        - generic "Stop" [ref=e827]:
+                          - button [ref=e828] [cursor=pointer]:
+                            - img [ref=e829]
+                        - generic "Restart" [ref=e831]:
+                          - button [ref=e832] [cursor=pointer]:
+                            - img [ref=e833]
+                        - generic "Delete" [ref=e835]:
+                          - button [ref=e836] [cursor=pointer]:
+                            - img [ref=e837]
+                  - row "video_analytics_rlt_db_1 postgres:17 exited — — — Start Stop Restart Delete" [ref=e839]:
+                    - cell "video_analytics_rlt_db_1" [ref=e840]:
+                      - paragraph [ref=e841]: video_analytics_rlt_db_1
+                    - cell "postgres:17" [ref=e842]
+                    - cell "exited" [ref=e843]:
+                      - generic [ref=e845]: exited
+                    - cell "—" [ref=e846]
+                    - cell "—" [ref=e847]
+                    - cell "—" [ref=e848]
+                    - cell "Start Stop Restart Delete" [ref=e849]:
+                      - generic [ref=e850]:
+                        - generic "Start" [ref=e851]:
+                          - button [ref=e852] [cursor=pointer]:
+                            - img [ref=e853]
+                        - generic "Stop" [ref=e855]:
+                          - button [ref=e856] [cursor=pointer]:
+                            - img [ref=e857]
+                        - generic "Restart" [ref=e859]:
+                          - button [ref=e860] [cursor=pointer]:
+                            - img [ref=e861]
+                        - generic "Delete" [ref=e863]:
+                          - button [ref=e864] [cursor=pointer]:
+                            - img [ref=e865]
+                  - row "shortly-db-1 postgres:17 exited — — — Start Stop Restart Delete" [ref=e867]:
+                    - cell "shortly-db-1" [ref=e868]:
+                      - paragraph [ref=e869]: shortly-db-1
+                    - cell "postgres:17" [ref=e870]
+                    - cell "exited" [ref=e871]:
+                      - generic [ref=e873]: exited
+                    - cell "—" [ref=e874]
+                    - cell "—" [ref=e875]
+                    - cell "—" [ref=e876]
+                    - cell "Start Stop Restart Delete" [ref=e877]:
+                      - generic [ref=e878]:
+                        - generic "Start" [ref=e879]:
+                          - button [ref=e880] [cursor=pointer]:
+                            - img [ref=e881]
+                        - generic "Stop" [ref=e883]:
+                          - button [ref=e884] [cursor=pointer]:
+                            - img [ref=e885]
+                        - generic "Restart" [ref=e887]:
+                          - button [ref=e888] [cursor=pointer]:
+                            - img [ref=e889]
+                        - generic "Delete" [ref=e891]:
+                          - button [ref=e892] [cursor=pointer]:
+                            - img [ref=e893]
+                  - row "shortly-redis-1 redis:8-alpine exited — — — Start Stop Restart Delete" [ref=e895]:
+                    - cell "shortly-redis-1" [ref=e896]:
+                      - paragraph [ref=e897]: shortly-redis-1
+                    - cell "redis:8-alpine" [ref=e898]
+                    - cell "exited" [ref=e899]:
+                      - generic [ref=e901]: exited
+                    - cell "—" [ref=e902]
+                    - cell "—" [ref=e903]
+                    - cell "—" [ref=e904]
+                    - cell "Start Stop Restart Delete" [ref=e905]:
+                      - generic [ref=e906]:
+                        - generic "Start" [ref=e907]:
+                          - button [ref=e908] [cursor=pointer]:
+                            - img [ref=e909]
+                        - generic "Stop" [ref=e911]:
+                          - button [ref=e912] [cursor=pointer]:
+                            - img [ref=e913]
+                        - generic "Restart" [ref=e915]:
+                          - button [ref=e916] [cursor=pointer]:
+                            - img [ref=e917]
+                        - generic "Delete" [ref=e919]:
+                          - button [ref=e920] [cursor=pointer]:
+                            - img [ref=e921]
+                  - row "language_cards-db-1 postgres:17 exited — — — Start Stop Restart Delete" [ref=e923]:
+                    - cell "language_cards-db-1" [ref=e924]:
+                      - paragraph [ref=e925]: language_cards-db-1
+                    - cell "postgres:17" [ref=e926]
+                    - cell "exited" [ref=e927]:
+                      - generic [ref=e929]: exited
+                    - cell "—" [ref=e930]
+                    - cell "—" [ref=e931]
+                    - cell "—" [ref=e932]
+                    - cell "Start Stop Restart Delete" [ref=e933]:
+                      - generic [ref=e934]:
+                        - generic "Start" [ref=e935]:
+                          - button [ref=e936] [cursor=pointer]:
+                            - img [ref=e937]
+                        - generic "Stop" [ref=e939]:
+                          - button [ref=e940] [cursor=pointer]:
+                            - img [ref=e941]
+                        - generic "Restart" [ref=e943]:
+                          - button [ref=e944] [cursor=pointer]:
+                            - img [ref=e945]
+                        - generic "Delete" [ref=e947]:
+                          - button [ref=e948] [cursor=pointer]:
+                            - img [ref=e949]
+    - generic [ref=e951]:
+      - img [ref=e953]
+      - button "Open Tanstack query devtools" [ref=e1001] [cursor=pointer]:
+        - img [ref=e1002]
+  - generic [ref=e1050]: 05/17

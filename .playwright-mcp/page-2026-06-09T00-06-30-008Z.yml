@@ -1,0 +1,28 @@
+- generic [ref=e2]:
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Server Monitor" [level=5] [ref=e11]
+      - paragraph [ref=e12]: Войдите для продолжения
+    - alert [ref=e122]:
+      - img [ref=e124]
+      - generic [ref=e126]: Ошибка сети. Попробуйте ещё раз.
+      - button "Close" [ref=e128] [cursor=pointer]:
+        - img [ref=e129]
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: Имя пользователя
+        - generic [ref=e16]:
+          - textbox "Имя пользователя" [ref=e17]: admin
+          - group:
+            - generic: Имя пользователя
+      - generic [ref=e18]:
+        - generic [ref=e19]: Пароль
+        - generic [ref=e20]:
+          - textbox "Пароль" [ref=e21]: admin123
+          - group:
+            - generic: Пароль
+      - button "Войти" [ref=e22] [cursor=pointer]: Войти
+  - generic [ref=e23]:
+    - img [ref=e25]
+    - button "Open Tanstack query devtools" [ref=e73] [cursor=pointer]:
+      - img [ref=e74]

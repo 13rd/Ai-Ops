@@ -1,0 +1,158 @@
+- generic [ref=e2]:
+  - generic [ref=e122]:
+    - banner [ref=e123]:
+      - generic [ref=e124]:
+        - heading "Server Monitor" [level=6] [ref=e125]
+        - button "Уведомления" [ref=e126] [cursor=pointer]:
+          - generic [ref=e127]:
+            - img [ref=e128]
+            - generic [ref=e130]: "21"
+        - button "admin" [ref=e131] [cursor=pointer]:
+          - generic [ref=e132]: A
+    - navigation [ref=e133]:
+      - generic [ref=e135]:
+        - heading "Server Monitor" [level=6] [ref=e137]
+        - separator [ref=e138]
+        - list [ref=e139]:
+          - button "Дашборд" [ref=e140] [cursor=pointer]:
+            - img [ref=e142]
+            - generic [ref=e145]: Дашборд
+          - button "Серверы" [ref=e146] [cursor=pointer]:
+            - img [ref=e148]
+            - generic [ref=e151]: Серверы
+          - button "Аномалии" [ref=e152] [cursor=pointer]:
+            - img [ref=e154]
+            - generic [ref=e157]: Аномалии
+          - button "Уведомления" [ref=e158] [cursor=pointer]:
+            - img [ref=e160]
+            - generic [ref=e163]: Уведомления
+          - button "Пользователи" [ref=e164] [cursor=pointer]:
+            - img [ref=e166]
+            - generic [ref=e169]: Пользователи
+          - button "Журнал аудита" [ref=e170] [cursor=pointer]:
+            - img [ref=e172]
+            - generic [ref=e175]: Журнал аудита
+          - button "Настройки LLM" [ref=e176] [cursor=pointer]:
+            - img [ref=e178]
+            - generic [ref=e181]: Настройки LLM
+          - button "Отчёты" [ref=e182] [cursor=pointer]:
+            - img [ref=e184]
+            - generic [ref=e187]: Отчёты
+    - main [ref=e188]:
+      - generic [ref=e189]:
+        - heading "Дашборд" [level=5] [ref=e190]
+        - generic [ref=e191]:
+          - generic [ref=e194] [cursor=pointer]:
+            - generic [ref=e195]:
+              - text: Всего серверов
+              - heading "2" [level=4] [ref=e196]
+              - generic [ref=e197]: 2 онлайн · 0 офлайн
+            - img [ref=e199]
+          - generic [ref=e203] [cursor=pointer]:
+            - generic [ref=e204]:
+              - text: Открытые аномалии
+              - heading "43" [level=4] [ref=e205]
+              - generic [ref=e206]: Требуют внимания
+            - img [ref=e208]
+          - generic [ref=e212] [cursor=pointer]:
+            - generic [ref=e213]:
+              - text: Непрочитанных уведомлений
+              - heading "21" [level=4] [ref=e214]
+              - generic [ref=e215]: Нажмите на колокольчик
+            - img [ref=e217]
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - text: Серверов онлайн
+              - heading "2 / 2" [level=4] [ref=e223]
+              - generic [ref=e224]: 100% доступность
+            - img [ref=e226]
+        - generic [ref=e228]:
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - heading "Серверы" [level=6] [ref=e232]
+              - button "Все серверы" [ref=e233] [cursor=pointer]
+            - generic [ref=e234]:
+              - generic [ref=e235] [cursor=pointer]:
+                - generic [ref=e236]:
+                  - img [ref=e237]
+                  - generic [ref=e239]:
+                    - paragraph [ref=e240]: fr test 2
+                    - text: 141.98.84.84
+                - generic [ref=e242]: a few seconds ago
+              - generic [ref=e243] [cursor=pointer]:
+                - generic [ref=e244]:
+                  - img [ref=e245]
+                  - generic [ref=e247]:
+                    - paragraph [ref=e248]: test
+                    - text: 185.58.115.243
+                - generic [ref=e249]:
+                  - generic [ref=e251]: development
+                  - generic [ref=e252]: a few seconds ago
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - heading "Последние аномалии" [level=6] [ref=e256]
+              - button "Все аномалии" [ref=e257] [cursor=pointer]
+            - table [ref=e259]:
+              - rowgroup [ref=e260]:
+                - row "Тип Критичность Статус Сервер Обнаружена" [ref=e261]:
+                  - columnheader "Тип" [ref=e262]
+                  - columnheader "Критичность" [ref=e263]
+                  - columnheader "Статус" [ref=e264]
+                  - columnheader "Сервер" [ref=e265]
+                  - columnheader "Обнаружена" [ref=e266]
+                  - columnheader [ref=e267]
+              - rowgroup [ref=e268]:
+                - row "Сетевой шторм Критическая Открыта fr test 2 7 hours ago Открыть" [ref=e269] [cursor=pointer]:
+                  - cell "Сетевой шторм" [ref=e270]
+                  - cell "Критическая" [ref=e271]:
+                    - generic [ref=e273]: Критическая
+                  - cell "Открыта" [ref=e274]:
+                    - generic [ref=e276]: Открыта
+                  - cell "fr test 2" [ref=e277]
+                  - cell "7 hours ago" [ref=e278]
+                  - cell "Открыть" [ref=e279]:
+                    - button "Открыть" [ref=e280]
+                - row "Утечка памяти Высокая Открыта test 9 hours ago Открыть" [ref=e281] [cursor=pointer]:
+                  - cell "Утечка памяти" [ref=e282]
+                  - cell "Высокая" [ref=e283]:
+                    - generic [ref=e285]: Высокая
+                  - cell "Открыта" [ref=e286]:
+                    - generic [ref=e288]: Открыта
+                  - cell "test" [ref=e289]
+                  - cell "9 hours ago" [ref=e290]
+                  - cell "Открыть" [ref=e291]:
+                    - button "Открыть" [ref=e292]
+                - row "Заполнение диска Критическая Открыта fr test 2 9 hours ago Открыть" [ref=e293] [cursor=pointer]:
+                  - cell "Заполнение диска" [ref=e294]
+                  - cell "Критическая" [ref=e295]:
+                    - generic [ref=e297]: Критическая
+                  - cell "Открыта" [ref=e298]:
+                    - generic [ref=e300]: Открыта
+                  - cell "fr test 2" [ref=e301]
+                  - cell "9 hours ago" [ref=e302]
+                  - cell "Открыть" [ref=e303]:
+                    - button "Открыть" [ref=e304]
+                - row "Утечка памяти Высокая Открыта fr test 2 2 days ago Открыть" [ref=e305] [cursor=pointer]:
+                  - cell "Утечка памяти" [ref=e306]
+                  - cell "Высокая" [ref=e307]:
+                    - generic [ref=e309]: Высокая
+                  - cell "Открыта" [ref=e310]:
+                    - generic [ref=e312]: Открыта
+                  - cell "fr test 2" [ref=e313]
+                  - cell "2 days ago" [ref=e314]
+                  - cell "Открыть" [ref=e315]:
+                    - button "Открыть" [ref=e316]
+                - row "Пик CPU Критическая Открыта fr test 2 2 days ago Открыть" [ref=e317] [cursor=pointer]:
+                  - cell "Пик CPU" [ref=e318]
+                  - cell "Критическая" [ref=e319]:
+                    - generic [ref=e321]: Критическая
+                  - cell "Открыта" [ref=e322]:
+                    - generic [ref=e324]: Открыта
+                  - cell "fr test 2" [ref=e325]
+                  - cell "2 days ago" [ref=e326]
+                  - cell "Открыть" [ref=e327]:
+                    - button "Открыть" [ref=e328]
+  - generic [ref=e23]:
+    - img [ref=e25]
+    - button "Open Tanstack query devtools" [ref=e73] [cursor=pointer]:
+      - img [ref=e74]

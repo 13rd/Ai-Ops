@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: trainbed_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trainbed
+      POSTGRES_PASSWORD: trainbed
+      POSTGRES_DB: trainbed
+    ports:
+      - "5433:5432"
+    volumes:
+      - trainbed_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trainbed"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  gen-web:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-web
+    restart: unless-stopped
+    environment:
+      PROFILE: web_server
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gen-db:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-db
+    restart: unless-stopped
+    environment:
+      PROFILE: database
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gen-storage:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-storage
+    restart: unless-stopped
+    environment:
+      PROFILE: file_storage
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gen-worker:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-worker
+    restart: unless-stopped
+    environment:
+      PROFILE: worker
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gen-monitor:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-monitor
+    restart: unless-stopped
+    environment:
+      PROFILE: monitoring
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gen-lb:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-lb
+    restart: unless-stopped
+    environment:
+      PROFILE: load_balancer
+      SPEEDUP: "3600"
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  collector:
+    image: 13imp/server-monitor-trainbed:latest
+    container_name: trainbed-collector
+    profiles:
+      - manual
+    environment:
+      DATABASE_URL: postgresql+psycopg2://trainbed:trainbed@postgres:5432/trainbed
+    command: >
+      sh -c "mkdir -p /app/data_gen/output && python /app/data_gen/trainbed/collector.py"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  trainbed_pgdata:

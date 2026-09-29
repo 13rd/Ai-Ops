@@ -1,0 +1,25 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e414]:
+      - generic [ref=e415]:
+        - heading "Server Monitor" [level=5] [ref=e416]
+        - paragraph [ref=e417]: Войдите для продолжения
+      - generic [ref=e418]:
+        - generic [ref=e419]:
+          - generic [ref=e420]: Имя пользователя
+          - generic [ref=e421]:
+            - textbox "Имя пользователя" [active] [ref=e422]
+            - group:
+              - generic: Имя пользователя
+        - generic [ref=e423]:
+          - generic: Пароль
+          - generic [ref=e424]:
+            - textbox "Пароль" [ref=e425]
+            - group:
+              - generic: Пароль
+        - button "Войти" [ref=e426] [cursor=pointer]
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button "Open Tanstack query devtools" [ref=e427] [cursor=pointer]:
+        - img [ref=e58]
+  - generic [ref=e326]: write

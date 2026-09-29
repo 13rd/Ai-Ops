@@ -4,18 +4,35 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: server_monitor_db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: server_monitor
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-server_monitor}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups  # для бэкапов БД
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: server_monitor_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 5
 
   backend:
@@ -23,23 +40,141 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: server_monitor_backend
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/server_monitor
-      DEBUG: "True"
-      SECRET_KEY: dev-secret-key-change-in-production-12345
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@postgres:5432/server_monitor}
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-this-in-production}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      METRICS_COLLECTION_INTERVAL: ${METRICS_COLLECTION_INTERVAL:-60}
+      METRICS_INTERVAL_SEC: ${METRICS_INTERVAL_SEC:-15}
+      ML_INTERVAL_MIN: ${ML_INTERVAL_MIN:-5}
+      SSH_TIMEOUT: ${SSH_TIMEOUT:-30}
+      SSH_ENCRYPTION_KEY: ${SSH_ENCRYPTION_KEY:-dev-only-change-this-fernet-master-key}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_DEFAULT_CHAT_ID: ${TELEGRAM_DEFAULT_CHAT_ID:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - .:/app
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # для взаимодействия с Docker на хосте
     command: >
       sh -c "
-        uv run alembic upgrade head &&
-        uv run python scripts/seed_db.py &&
-        uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        python -m alembic upgrade head &&
+        python scripts/seed_db.py &&
+        python -c '
+        import asyncio
+        from app.main import startup_event
+        asyncio.run(startup_event())
+        ' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
       "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # server-simulator:
+  #   build:
+  #     context: .
+  #     dockerfile: data_gen/simulator/Dockerfile
+  #   container_name: server_monitor_simulator
+  #   ports:
+  #     - "8100:8100"
+  #   environment:
+  #     PYTHONUNBUFFERED: "1"
+  #   command: >
+  #     python -m data_gen.simulator
+  #       --config data_gen/simulator/default_config.yml
+  #       -v
+  #   restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: server_monitor_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro  # директория для фронтенда
+      - ./ssl:/etc/nginx/ssl:ro  # для SSL-сертификатов
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - monitor-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: server-monitor-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - monitor-net
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: server-monitor-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["sh", "-c", "ollama pull qwen2.5:3b"]
+    networks:
+      - monitor-net
+    restart: "no"
+
+  stress-target:
+    build: ./data_gen/testbeds/stress_target
+    container_name: server-monitor-stress-target
+    ports:
+      - "127.0.0.1:2224:22"
+    cap_add:
+      - SYS_NICE
+    networks:
+      - monitor-net
+    restart: unless-stopped
+
+  # iperf3 sink for the network_storm anomaly (real eth0 traffic, not loopback).
+  net-peer:
+    image: networkstatic/iperf3
+    container_name: server-monitor-net-peer
+    command: ["-s"]
+    networks:
+      - monitor-net
+    restart: unless-stopped
+
+networks:
+  monitor-net:
+    driver: bridge
 
 volumes:
   postgres_data:
+  redis_data:
+  logs:
+  ollama_data:

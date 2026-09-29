@@ -1,0 +1,142 @@
+- generic [ref=e2]:
+  - generic [ref=e122]:
+    - banner [ref=e123]:
+      - generic [ref=e124]:
+        - heading "Server Monitor" [level=6] [ref=e125]
+        - button "Notifications" [ref=e126] [cursor=pointer]:
+          - img [ref=e128]
+        - button "admin" [ref=e130] [cursor=pointer]:
+          - generic [ref=e131]: A
+    - navigation [ref=e132]:
+      - generic [ref=e134]:
+        - heading "Server Monitor" [level=6] [ref=e136]
+        - separator [ref=e137]
+        - list [ref=e138]:
+          - button "Dashboard" [ref=e139] [cursor=pointer]:
+            - img [ref=e141]
+            - generic [ref=e144]: Dashboard
+          - button "Servers" [ref=e145] [cursor=pointer]:
+            - img [ref=e147]
+            - generic [ref=e150]: Servers
+          - button "Anomalies" [ref=e151] [cursor=pointer]:
+            - img [ref=e153]
+            - generic [ref=e156]: Anomalies
+          - button "Notifications" [ref=e157] [cursor=pointer]:
+            - img [ref=e159]
+            - generic [ref=e162]: Notifications
+          - button "Users" [ref=e163] [cursor=pointer]:
+            - img [ref=e165]
+            - generic [ref=e168]: Users
+          - button "Audit Log" [ref=e169] [cursor=pointer]:
+            - img [ref=e171]
+            - generic [ref=e174]: Audit Log
+          - button "Reports" [ref=e175] [cursor=pointer]:
+            - img [ref=e177]
+            - generic [ref=e180]: Reports
+    - main [ref=e181]:
+      - generic [ref=e183]:
+        - heading "Dashboard" [level=5] [ref=e184]
+        - generic [ref=e185]:
+          - generic [ref=e188] [cursor=pointer]:
+            - generic [ref=e189]:
+              - text: Total Servers
+              - heading "5" [level=4] [ref=e190]
+              - generic [ref=e191]: 4 online · 1 offline
+            - img [ref=e193]
+          - generic [ref=e197] [cursor=pointer]:
+            - generic [ref=e198]:
+              - text: Open Anomalies
+              - heading "1" [level=4] [ref=e199]
+              - generic [ref=e200]: Require attention
+            - img [ref=e202]
+          - generic [ref=e206] [cursor=pointer]:
+            - generic [ref=e207]:
+              - text: Unread Notifications
+              - heading "0" [level=4] [ref=e208]
+              - generic [ref=e209]: All caught up
+            - img [ref=e211]
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - text: Online Servers
+              - heading "4 / 5" [level=4] [ref=e217]
+              - generic [ref=e218]: 80% availability
+            - img [ref=e220]
+        - generic [ref=e222]:
+          - generic [ref=e224]:
+            - generic [ref=e225]:
+              - heading "Servers" [level=6] [ref=e226]
+              - button "View all" [ref=e227] [cursor=pointer]
+            - generic [ref=e228]:
+              - generic [ref=e229] [cursor=pointer]:
+                - generic [ref=e230]:
+                  - img [ref=e231]
+                  - generic [ref=e233]:
+                    - paragraph [ref=e234]: prod-web-01
+                    - text: 10.0.0.100
+                - generic [ref=e235]:
+                  - generic [ref=e237]: prod
+                  - generic [ref=e238]: 4 hours ago
+              - generic [ref=e239] [cursor=pointer]:
+                - generic [ref=e240]:
+                  - img [ref=e241]
+                  - generic [ref=e243]:
+                    - paragraph [ref=e244]: testbed-server-c
+                    - text: localhost
+                - generic [ref=e245]:
+                  - generic [ref=e247]: dev
+                  - generic [ref=e248]: 4 hours ago
+              - generic [ref=e249] [cursor=pointer]:
+                - generic [ref=e250]:
+                  - img [ref=e251]
+                  - generic [ref=e253]:
+                    - paragraph [ref=e254]: testbed-server-b
+                    - text: localhost
+                - generic [ref=e255]:
+                  - generic [ref=e257]: dev
+                  - generic [ref=e258]: 4 hours ago
+              - generic [ref=e259] [cursor=pointer]:
+                - generic [ref=e260]:
+                  - img [ref=e261]
+                  - generic [ref=e263]:
+                    - paragraph [ref=e264]: testbed-server-a
+                    - text: localhost
+                - generic [ref=e265]:
+                  - generic [ref=e267]: dev
+                  - generic [ref=e268]: 4 hours ago
+              - generic [ref=e269] [cursor=pointer]:
+                - generic [ref=e270]:
+                  - img [ref=e271]
+                  - generic [ref=e273]:
+                    - paragraph [ref=e274]: test
+                    - text: 185.58.115.243
+                - generic [ref=e275]:
+                  - generic [ref=e277]: development
+                  - generic [ref=e278]: 4 hours ago
+          - generic [ref=e280]:
+            - generic [ref=e281]:
+              - heading "Recent Anomalies" [level=6] [ref=e282]
+              - button "View all" [ref=e283] [cursor=pointer]
+            - table [ref=e285]:
+              - rowgroup [ref=e286]:
+                - row "Type Severity Status Server Detected" [ref=e287]:
+                  - columnheader "Type" [ref=e288]
+                  - columnheader "Severity" [ref=e289]
+                  - columnheader "Status" [ref=e290]
+                  - columnheader "Server" [ref=e291]
+                  - columnheader "Detected" [ref=e292]
+                  - columnheader [ref=e293]
+              - rowgroup [ref=e294]:
+                - row "cpu spike high resolved testbed-server-a 9 hours ago View" [ref=e295] [cursor=pointer]:
+                  - cell "cpu spike" [ref=e296]
+                  - cell "high" [ref=e297]:
+                    - generic [ref=e299]: high
+                  - cell "resolved" [ref=e300]:
+                    - generic [ref=e302]: resolved
+                  - cell "testbed-server-a" [ref=e303]
+                  - cell "9 hours ago" [ref=e304]
+                  - cell "View" [ref=e305]:
+                    - button "View" [ref=e306]
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e57] [cursor=pointer]:
+      - img [ref=e58]

@@ -1,0 +1,36 @@
+# Standalone test stand — only the SSH target + network peer, without the
+# main monitoring system (no postgres/redis/ollama/backend/nginx).
+#
+#   make target-up      # build & start the stand
+#   make target-down    # stop it
+#
+# Drive anomalies from inside the container:
+#   docker exec server-monitor-stress-target /usr/local/bin/demo_anomaly.sh cpu 120
+#   docker exec server-monitor-stress-target /usr/local/bin/demo_anomaly.sh mem 120
+#   docker exec server-monitor-stress-target /usr/local/bin/demo_anomaly.sh net 120
+#
+# Or connect a locally-run backend over SSH at 127.0.0.1:2224 (demo/demopass),
+# registering the target with STRESS_TARGET_HOST=127.0.0.1 STRESS_TARGET_PORT=2224.
+services:
+  stress-target:
+    build: ./data_gen/testbeds/stress_target
+    container_name: server-monitor-stress-target
+    ports:
+      - "127.0.0.1:2224:22"
+    cap_add:
+      - SYS_NICE
+    networks:
+      - target-net
+    restart: unless-stopped
+
+  net-peer:
+    image: networkstatic/iperf3
+    container_name: server-monitor-net-peer
+    command: ["-s"]
+    networks:
+      - target-net
+    restart: unless-stopped
+
+networks:
+  target-net:
+    driver: bridge

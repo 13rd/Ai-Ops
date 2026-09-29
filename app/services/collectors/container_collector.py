@@ -13,24 +13,14 @@ from app.services.servers.connection_service import (
 
 logger = logging.getLogger(__name__)
 
-
 class ContainerCollector:
-    """
-    Collector for container information from remote servers.
-    Focuses on Docker containers for Sprint 1.
-    """
 
     @staticmethod
     async def collect_containers(server: Server) -> Optional[List[ContainerSnapshotBase]]:
-        """
-        Collect container information from server.
-        Returns list of containers or None if collection fails.
-        Returns empty list if Docker is not available.
-        """
+
         try:
             client = await SSHConnectionService.get_ssh_client(server)
 
-            # Run collection in thread pool
             loop = asyncio.get_event_loop()
             containers = await loop.run_in_executor(
                 None,
@@ -50,13 +40,10 @@ class ContainerCollector:
 
     @staticmethod
     def _collect_containers_sync(client: paramiko.SSHClient) -> List[ContainerSnapshotBase]:
-        """
-        Synchronously collect container information using SSH client.
-        """
+
         containers = []
 
         try:
-            # Check if Docker is available
             stdin, stdout, stderr = client.exec_command("which docker")
             docker_path = stdout.read().decode().strip()
 
@@ -64,7 +51,6 @@ class ContainerCollector:
                 logger.info("Docker not found on server")
                 return []
 
-            # Get detailed container information using docker inspect
             stdin, stdout, stderr = client.exec_command('docker ps -aq --format="{{.ID}}"')
             container_ids_output = stdout.read().decode().strip()
 
@@ -73,13 +59,11 @@ class ContainerCollector:
 
             container_ids = container_ids_output.split("\n") if container_ids_output else []
 
-            # Get container stats for running containers
             stdin, stdout, stderr = client.exec_command(
                 'docker stats --no-stream --format="{{.ID}}|{{.CPUPerc}}|{{.MemUsage}}|{{.Status}}"'
             )
             stats_output = stdout.read().decode().strip()
 
-            # Parse stats into a dictionary for easy lookup
             stats_dict = {}
             if stats_output:
                 for line in stats_output.split("\n"):
@@ -88,19 +72,17 @@ class ContainerCollector:
                     try:
                         parts = line.split("|")
                         if len(parts) >= 4:
-                            container_id = parts[0][:12]  # Docker uses first 12 chars as short ID
+                            container_id = parts[0][:12]
                             cpu_perc_str = parts[1].replace("%", "").strip()
-                            mem_usage = parts[2]  # Format is "Used/Limit"
+                            mem_usage = parts[2]
                             status = parts[3]
 
-                            # Parse CPU percentage
                             cpu_percentage = None
                             try:
                                 cpu_percentage = float(cpu_perc_str)
                             except (ValueError, TypeError):
                                 pass
 
-                            # Parse memory usage
                             mem_used_str = (
                                 mem_usage.split("/")[0].strip() if "/" in mem_usage else mem_usage
                             )
@@ -115,12 +97,10 @@ class ContainerCollector:
                         logger.warning(f"Failed to parse stats line '{line}': {e}")
                         continue
 
-            # Process each container
             for cid in container_ids:
                 if not cid.strip():
                     continue
 
-                # Get detailed container info
                 cmd = f"docker inspect {cid}"
                 stdin, stdout, stderr = client.exec_command(cmd)
                 inspect_output = stdout.read().decode().strip()
@@ -128,53 +108,43 @@ class ContainerCollector:
                 try:
                     import json
 
-                    container_info = json.loads(inspect_output)[0]  # First container in array
+                    container_info = json.loads(inspect_output)[0]
 
-                    # Extract container details
                     container_config = container_info.get("Config", {})
                     state_info = container_info.get("State", {})
                     network_settings = container_info.get("NetworkSettings", {})
 
-                    # Basic info
-                    container_id = container_info.get("Id", "")[:12]  # Short ID
+                    container_id = container_info.get("Id", "")[:12]
                     container_name = container_info.get("Name", "").lstrip(
                         "/"
-                    )  # Remove leading slash
+                    )
                     image = container_info.get("Config", {}).get("Image", "")
 
-                    # Extract status from docker ps or container state
                     status = state_info.get("Status", "")
 
-                    # Default values that might be updated from stats
                     cpu_percentage = stats_dict.get(container_id, {}).get("cpu_percentage")
                     memory_usage_mb = stats_dict.get(container_id, {}).get("memory_usage_mb")
 
-                    # Additional metrics
                     restart_count = state_info.get("RestartCount", 0)
                     health_status = state_info.get("Health", {}).get(
                         "Status", "unknown"
-                    )  # health status
+                    )
 
-                    # Check if running from state
                     running = state_info.get("Running", False)
 
-                    # Ports mapping
                     ports_parts = []
                     for port_proto, mappings in network_settings.get("Ports", {}).items():
                         if mappings:
-                            ports_parts.append(port_proto)  # Just append the port/proto string
+                            ports_parts.append(port_proto)
                     ports = ", ".join(ports_parts)
 
-                    # Container command
                     command = container_config.get("Cmd", [])
                     if isinstance(command, list):
                         command = " ".join(command)
 
-                    # Creation and start times
                     created_at = container_info.get("Created", "")
                     started_at = state_info.get("StartedAt", "")
 
-                    # Memory percentage calculation (if possible)
                     memory_percentage = None
                     if memory_usage_mb is not None:
                         total_mem = container_info.get("HostConfig", {}).get("Memory", 0)
@@ -201,9 +171,7 @@ class ContainerCollector:
 
                 except Exception as e:
                     logger.warning(f"Failed to parse container details for {cid}: {e}")
-                    # Fallback: just get basic info
                     try:
-                        # Get basic info with docker ps
                         cmd = f'docker ps -a --filter "id={cid}" --format "{{.ID}}|{{.Names}}|{{.Image}}|{{.Status}}"'
                         stdin, stdout, stderr = client.exec_command(cmd)
                         basic_output = stdout.read().decode().strip()
@@ -229,13 +197,10 @@ class ContainerCollector:
 
     @staticmethod
     def _parse_memory_size(mem_str: str) -> Optional[float]:
-        """
-        Parse memory size string like '1.2GiB' or '512MiB' to MB.
-        """
+
         try:
             mem_str = mem_str.upper().strip()
 
-            # Remove MiB, GiB, etc. and extract numeric part
             import re
 
             num_match = re.search(r"([0-9.]+)", mem_str)
@@ -244,22 +209,21 @@ class ContainerCollector:
 
             num = float(num_match.group(1))
 
-            # Extract unit
             if "KIB" in mem_str:
-                return num / (1024 * 1024)  # KiB to MB
+                return num / (1024 * 1024)
             elif "MIB" in mem_str:
-                return num / 1024  # MiB to MB
+                return num / 1024
             elif "GIB" in mem_str:
-                return num * 1024  # GiB to MB
+                return num * 1024
             elif "KB" in mem_str:
-                return num / (1024 * 1024)  # KB to MB
+                return num / (1024 * 1024)
             elif "MB" in mem_str:
-                return num  # MB stays as MB
+                return num
             elif "GB" in mem_str:
-                return num * 1024  # GB to MB
+                return num * 1024
             elif "TB" in mem_str:
-                return num * 1024 * 1024  # TB to MB
+                return num * 1024 * 1024
             else:
-                return num  # Assume bytes, convert to MB
+                return num
         except:
             return None

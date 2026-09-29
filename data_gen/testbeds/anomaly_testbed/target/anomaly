@@ -1,0 +1,84 @@
+#!/bin/bash
+# Unified anomaly control for the testbed target container.
+#
+# Generates REAL workloads that the SSH MetricsCollector + ContainerCollector
+# pick up over SSH. Driven by data_gen/scripts/inject_anomalies.py running with
+# "inject_mode": "testbed" in the server config, which calls:
+#
+#     sudo anomaly <type> <duration_sec>     # start one anomaly
+#     sudo anomaly stop                       # stop everything + restore
+#
+# All 6 anomaly classes are covered:
+#   cpu_spike, memory_leak, disk_fill, network_storm  -> stress-ng / dd (host load)
+#   container_crash, service_down                      -> docker kill/stop victims
+#                                                         (drops containers_running_ratio)
+set -u
+
+FILL=/tmp/anom_fill
+# Victim containers are created by docker-compose with fixed container_name's.
+CRASH_VICTIM=testbed-victim-worker          # container_crash -> ratio drops one notch
+SERVICE_VICTIMS="testbed-victim-web testbed-victim-db"  # service_down -> bigger ratio drop
+
+start() {
+    local type="$1" dur="${2:-120}"
+    case "$type" in
+        cpu_spike)
+            nohup stress-ng --cpu 0 --timeout "${dur}s" \
+                >/dev/null 2>&1 </dev/null &
+            ;;
+        memory_leak)
+            # Allocate 60% of host RAM via mmap then hang — no continuous writes
+            # so CPU stays near 0% (unlike --vm which continuously rewrites pages).
+            nohup stress-ng --vm 1 --vm-bytes 60% --vm-keep --vm-hang 0 \
+                --timeout "${dur}s" >/dev/null 2>&1 </dev/null &
+            ;;
+        disk_fill)
+            nohup dd if=/dev/zero of="$FILL" bs=1M count=4096 \
+                >/dev/null 2>&1 </dev/null &
+            ;;
+        network_storm)
+            # Generate real external TCP traffic on eth0.
+            # HTTP (port 80) is reachable; HTTPS is blocked on this host.
+            # Use timeout(1) to bound duration — avoids SECONDS bashism in /bin/sh.
+            nohup timeout "${dur}s" \
+                sh -c 'while true; do curl -s -o /dev/null --max-time 30 http://speedtest.tele2.net/10MB.zip 2>/dev/null; done' \
+                >/dev/null 2>&1 </dev/null &
+            nohup timeout "${dur}s" \
+                sh -c 'while true; do curl -s -o /dev/null --max-time 30 http://speedtest.tele2.net/10MB.zip 2>/dev/null; done' \
+                >/dev/null 2>&1 </dev/null &
+            nohup stress-ng --rawudp 2 --rawudp-if eth0 --timeout "${dur}s" \
+                >/dev/null 2>&1 </dev/null &
+            ;;
+        container_crash)
+            docker kill "$CRASH_VICTIM" >/dev/null 2>&1 || true
+            ;;
+        service_down)
+            # shellcheck disable=SC2086
+            docker stop $SERVICE_VICTIMS >/dev/null 2>&1 || true
+            ;;
+        *)
+            echo "unknown anomaly type: $type" >&2
+            exit 2
+            ;;
+    esac
+    echo "started $type (${dur}s)"
+}
+
+stop() {
+    pkill -f stress-ng 2>/dev/null || true
+    pkill -f "curl.*speedtest" 2>/dev/null || true
+    rm -f "${FILL}"* 2>/dev/null || true
+    # shellcheck disable=SC2086
+    docker start "$CRASH_VICTIM" $SERVICE_VICTIMS >/dev/null 2>&1 || true
+    echo "stopped + restored"
+}
+
+case "${1:-}" in
+    stop) stop ;;
+    "")
+        echo "usage: anomaly <cpu_spike|memory_leak|disk_fill|network_storm|" \
+             "container_crash|service_down|stop> [duration_sec]" >&2
+        exit 1
+        ;;
+    *) start "$1" "${2:-120}" ;;
+esac

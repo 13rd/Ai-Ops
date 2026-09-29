@@ -1,0 +1,119 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - heading "Server Monitor" [level=6] [ref=e355]
+        - button "Notifications" [ref=e356] [cursor=pointer]:
+          - img [ref=e8]
+        - button "smoke_phase0_user" [ref=e357] [cursor=pointer]:
+          - generic [ref=e11]: S
+    - navigation [ref=e12]:
+      - generic [ref=e14]:
+        - heading "Server Monitor" [level=6] [ref=e358]
+        - separator [ref=e17]
+        - list [ref=e18]:
+          - button "Dashboard" [ref=e359] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e24]: Dashboard
+          - button "Servers" [ref=e360] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e30]: Servers
+          - button "Anomalies" [ref=e361] [cursor=pointer]:
+            - img [ref=e33]
+            - generic [ref=e36]: Anomalies
+          - button "Notifications" [ref=e362] [cursor=pointer]:
+            - img [ref=e39]
+            - generic [ref=e42]: Notifications
+          - button "Users" [ref=e363] [cursor=pointer]:
+            - img [ref=e45]
+            - generic [ref=e48]: Users
+          - button "Audit Log" [ref=e364] [cursor=pointer]:
+            - img [ref=e51]
+            - generic [ref=e54]: Audit Log
+          - button "Reports" [ref=e365] [cursor=pointer]:
+            - img [ref=e57]
+            - generic [ref=e60]: Reports
+    - main [ref=e61]:
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - heading "Servers" [level=5] [ref=e366]
+          - generic [ref=e65]:
+            - button "Filters" [ref=e367] [cursor=pointer]:
+              - img [ref=e68]
+              - text: Filters
+            - button "New Server" [active] [ref=e368] [cursor=pointer]:
+              - img [ref=e72]
+              - text: New Server
+        - generic: Environment
+        - generic: Status
+        - generic: Sort by
+        - generic: Order
+        - generic [ref=e74]:
+          - button "prod-web-01 10.0.0.100:22 prod nginx web linux Never seen" [ref=e371] [cursor=pointer]:
+            - generic [ref=e372]:
+              - generic [ref=e373]:
+                - heading "prod-web-01" [level=6] [ref=e374]
+                - img [ref=e375]
+              - paragraph [ref=e377]: 10.0.0.100:22
+              - generic [ref=e378]:
+                - generic [ref=e380]: prod
+                - generic [ref=e382]: nginx
+                - generic [ref=e384]: web
+                - generic [ref=e386]: linux
+              - generic [ref=e387]:
+                - generic [ref=e388]: Never seen
+                - generic [ref=e389]:
+                  - img [ref=e390]
+                  - img [ref=e392]
+          - button "testbed-server-c localhost:2223 dev Seen 4 hours ago" [ref=e394] [cursor=pointer]:
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - heading "testbed-server-c" [level=6] [ref=e395]
+                - img [ref=e81]
+              - paragraph [ref=e83]: localhost:2223
+              - generic [ref=e86]: dev
+              - generic [ref=e87]:
+                - generic [ref=e88]: Seen 4 hours ago
+                - generic [ref=e89]:
+                  - img [ref=e90]
+                  - img [ref=e92]
+          - button "testbed-server-b localhost:2222 dev Seen 4 hours ago" [ref=e396] [cursor=pointer]:
+            - generic [ref=e97]:
+              - generic [ref=e98]:
+                - heading "testbed-server-b" [level=6] [ref=e397]
+                - img [ref=e100]
+              - paragraph [ref=e102]: localhost:2222
+              - generic [ref=e105]: dev
+              - generic [ref=e106]:
+                - generic [ref=e107]: Seen 4 hours ago
+                - generic [ref=e108]:
+                  - img [ref=e109]
+                  - img [ref=e111]
+          - button "testbed-server-a localhost:2221 dev Seen 4 hours ago" [ref=e398] [cursor=pointer]:
+            - generic [ref=e116]:
+              - generic [ref=e117]:
+                - heading "testbed-server-a" [level=6] [ref=e399]
+                - img [ref=e119]
+              - paragraph [ref=e121]: localhost:2221
+              - generic [ref=e124]: dev
+              - generic [ref=e125]:
+                - generic [ref=e126]: Seen 4 hours ago
+                - generic [ref=e127]:
+                  - img [ref=e128]
+                  - img [ref=e130]
+          - button "test 185.58.115.243:22 development Seen 4 hours ago" [ref=e400] [cursor=pointer]:
+            - generic [ref=e135]:
+              - generic [ref=e136]:
+                - heading "test" [level=6] [ref=e401]
+                - img [ref=e138]
+              - paragraph [ref=e140]: 185.58.115.243:22
+              - generic [ref=e143]: development
+              - generic [ref=e144]:
+                - generic [ref=e145]: Seen 4 hours ago
+                - generic [ref=e146]:
+                  - img [ref=e147]
+                  - img [ref=e149]
+  - generic [ref=e151]:
+    - img [ref=e153]
+    - button "Open Tanstack query devtools" [ref=e402] [cursor=pointer]:
+      - img [ref=e202]

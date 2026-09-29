@@ -1,0 +1,432 @@
+@startuml ServerMonitor_ClassDiagram
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classBackgroundColor #F8F9FA
+skinparam classBorderColor #495057
+skinparam classArrowColor #343A40
+skinparam classFontSize 11
+skinparam classAttributeFontSize 10
+skinparam packageBorderColor #6C757D
+skinparam packageBackgroundColor #E9ECEF
+skinparam packageFontSize 12
+skinparam nodesep 50
+skinparam ranksep 70
+skinparam wrapWidth 200
+
+'-----------------------------------
+' Enums
+'-----------------------------------
+
+enum UserRole {
+    ADMIN
+    OPERATOR
+}
+
+enum ServerStatus {
+    ONLINE
+    OFFLINE
+    DEGRADED
+}
+
+enum AnomalyType {
+    CPU_SPIKE
+    MEMORY_LEAK
+    DISK_FILL
+    DISK_PRESSURE
+    NETWORK_STORM
+    NETWORK_ANOMALY
+    CONTAINER_CRASH
+    SERVICE_DOWN
+}
+
+enum AnomalySeverity {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+enum AnomalyStatus {
+    OPEN
+    INVESTIGATING
+    RESOLVED
+}
+
+enum RecommendationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    EXECUTED
+}
+
+enum AlertStatus {
+    OPEN
+    ACKNOWLEDGED
+    RESOLVED
+}
+
+enum AlertSeverity {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+enum AlertRuleType {
+    CPU_THRESHOLD
+    MEMORY_THRESHOLD
+    DISK_THRESHOLD
+    SERVER_OFFLINE
+    CONTAINER_DOWN
+    CONTAINER_UNHEALTHY
+}
+
+enum ServerPermission {
+    READ
+    WRITE
+}
+
+enum ConsoleSessionStatus {
+    ACTIVE
+    COMPLETED
+    FAILED
+    TERMINATED
+}
+
+enum NotificationChannelType {
+    INAPP
+    TELEGRAM
+}
+
+enum AggregationType {
+    MINUTE
+    HOUR
+    DAY
+}
+
+'-----------------------------------
+' Package: Auth
+'-----------------------------------
+
+package "Auth" #D0E8FF {
+
+    class User {
+        +id : Integer <<PK>>
+        +email : String <<unique>>
+        +username : String <<unique>>
+        +hashed_password : String
+        +role : UserRole
+        +is_active : Boolean
+        +created_at : DateTime
+        +updated_at : DateTime
+    }
+
+    class RefreshToken {
+        +jti : String <<PK>>
+        +user_id : Integer <<FK>>
+        +issued_at : DateTime
+        +expires_at : DateTime
+        +revoked : Boolean
+        +revoked_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: Servers
+'-----------------------------------
+
+package "Servers" #D5F5E3 {
+
+    class Server {
+        +id : Integer <<PK>>
+        +name : String
+        +host : String
+        +port : Integer
+        +connection_type : String
+        +environment : String
+        +tags : JSON
+        +status : ServerStatus
+        +last_seen : DateTime
+        +ssh_username : String
+        +ssh_password : Text <<encrypted>>
+        +ssh_private_key : Text <<encrypted>>
+        +created_at : DateTime
+        +updated_at : DateTime
+        ..
+        +get_decrypted_password() : str
+        +get_decrypted_private_key() : str
+    }
+
+    class UserServerAccess {
+        +user_id : Integer <<PK, FK>>
+        +server_id : Integer <<PK, FK>>
+        +permission : ServerPermission
+        +granted_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: Metrics
+'-----------------------------------
+
+package "Metrics" #FFF3CD {
+
+    class MetricSnapshot {
+        +id : Integer <<PK>>
+        +server_id : Integer <<FK>>
+        +cpu_usage_percent : Float
+        +load_average_1m : Float
+        +load_average_5m : Float
+        +load_average_15m : Float
+        +memory_total_mb : Float
+        +memory_used_mb : Float
+        +memory_usage_percent : Float
+        +disk_total_gb : Float
+        +disk_used_gb : Float
+        +disk_usage_percent : Float
+        +network_in_bytes : Float
+        +network_out_bytes : Float
+        +disk_read_bytes : Float
+        +disk_write_bytes : Float
+        +process_count : Integer
+        +uptime_seconds : Integer
+        +extra_data : JSON
+        +collected_at : DateTime
+    }
+
+    class ContainerSnapshot {
+        +id : Integer <<PK>>
+        +server_id : Integer <<FK>>
+        +container_id : String
+        +container_name : String
+        +image : String
+        +status : String
+        +extra_data : JSON
+        +collected_at : DateTime
+    }
+
+    class HistoricalMetric {
+        +id : Integer <<PK>>
+        +server_id : Integer <<FK>>
+        +metric_type : String
+        +aggregation_level : AggregationType
+        +timestamp : DateTime
+        +period_start : DateTime
+        +value_min : Float
+        +value_max : Float
+        +value_avg : Float
+        +value_last : Float
+        +sample_count : Integer
+        +collected_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: ML Anomaly Detection
+'-----------------------------------
+
+package "ML Anomaly Detection" #FDECEA {
+
+    class Anomaly {
+        +id : Integer <<PK>>
+        +server_id : Integer <<FK>>
+        +anomaly_type : AnomalyType
+        +severity : AnomalySeverity
+        +status : AnomalyStatus
+        +reconstruction_error : Float
+        +threshold : Float
+        +shap_explanation : JSON
+        +metrics_snapshot : JSON
+        +detected_at : DateTime
+        +resolved_at : DateTime
+        +resolved_by : Integer <<FK>>
+    }
+
+    class AnomalyEvent {
+        +id : Integer <<PK>>
+        +server_id : Integer <<FK>>
+        +scenario_type : String
+        +start_ts : DateTime
+        +end_ts : DateTime
+        +parameters : JSON
+        +created_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: Recommendations & Alerts
+'-----------------------------------
+
+package "Recommendations and Alerts" #E8DAEF {
+
+    class Recommendation {
+        +id : Integer <<PK>>
+        +anomaly_id : Integer <<FK>>
+        +llm_raw_output : Text
+        +filtered_command : Text
+        +explanation : Text
+        +status : RecommendationStatus
+        +approved_by : Integer <<FK>>
+        +executed_at : DateTime
+        +execution_result : JSON
+        +created_at : DateTime
+    }
+
+    class Alert {
+        +id : Integer <<PK>>
+        +title : String
+        +description : Text
+        +status : AlertStatus
+        +severity : AlertSeverity
+        +rule_type : AlertRuleType
+        +server_id : Integer <<FK>>
+        +container_id : String
+        +metric_type : String
+        +threshold_value : String
+        +current_value : String
+        +acknowledged_at : DateTime
+        +acknowledged_by_user_id : Integer <<FK>>
+        +resolved_at : DateTime
+        +first_triggered_at : DateTime
+        +additional_metadata : JSON
+        +created_at : DateTime
+    }
+
+    class AlertRule {
+        +id : Integer <<PK>>
+        +name : String
+        +description : Text
+        +rule_type : AlertRuleType
+        +is_enabled : Boolean
+        +severity : AlertSeverity
+        +config : JSON
+        +server_ids : JSON
+        +tags : JSON
+        +created_at : DateTime
+        +updated_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: Notifications
+'-----------------------------------
+
+package "Notifications" #D6EAF8 {
+
+    class Notification {
+        +id : Integer <<PK>>
+        +user_id : Integer <<FK>>
+        +anomaly_id : Integer <<FK>>
+        +title : String
+        +body : Text
+        +severity : String
+        +is_read : Boolean
+        +read_at : DateTime
+        +sent_at : DateTime
+        +channels_sent : JSON
+    }
+
+    class NotificationChannel {
+        +id : Integer <<PK>>
+        +user_id : Integer <<FK>>
+        +channel_type : NotificationChannelType
+        +config : JSON
+        +enabled : Boolean
+        +created_at : DateTime
+        +updated_at : DateTime
+    }
+
+}
+
+'-----------------------------------
+' Package: Audit & Console
+'-----------------------------------
+
+package "Audit and Console" #E8F8F5 {
+
+    class AuditLog {
+        +id : Integer <<PK>>
+        +user_id : Integer <<FK>>
+        +action : String
+        +resource_type : String
+        +resource_id : String
+        +details : JSON
+        +ip_address : String
+        +user_agent : Text
+        +created_at : DateTime
+    }
+
+    class ConsoleSession {
+        +id : Integer <<PK>>
+        +session_token : String <<unique>>
+        +user_id : Integer <<FK>>
+        +server_id : Integer <<FK>>
+        +status : ConsoleSessionStatus
+        +started_at : DateTime
+        +ended_at : DateTime
+        +duration_seconds : Integer
+        +client_ip : String
+        +terminated_by_user_id : Integer <<FK>>
+        +termination_reason : String
+        +session_metadata : JSON
+    }
+
+}
+
+'-----------------------------------
+' Enum usage
+'-----------------------------------
+
+User ..> UserRole : uses
+Server ..> ServerStatus : uses
+Anomaly ..> AnomalyType : uses
+Anomaly ..> AnomalySeverity : uses
+Anomaly ..> AnomalyStatus : uses
+Recommendation ..> RecommendationStatus : uses
+Alert ..> AlertStatus : uses
+Alert ..> AlertSeverity : uses
+Alert ..> AlertRuleType : uses
+AlertRule ..> AlertRuleType : uses
+AlertRule ..> AlertSeverity : uses
+UserServerAccess ..> ServerPermission : uses
+ConsoleSession ..> ConsoleSessionStatus : uses
+NotificationChannel ..> NotificationChannelType : uses
+HistoricalMetric ..> AggregationType : uses
+
+'-----------------------------------
+' Associations
+'-----------------------------------
+
+User "1" *-- "0..*" RefreshToken : has
+
+User "1" *-- "0..*" UserServerAccess
+Server "1" *-- "0..*" UserServerAccess
+
+Server "1" *-- "0..*" MetricSnapshot : collects
+Server "1" *-- "0..*" ContainerSnapshot : snapshots
+Server "1" *-- "0..*" HistoricalMetric : aggregates
+Server "1" *-- "0..*" Anomaly : generates
+Server "1" *-- "0..*" AnomalyEvent : records
+Server "1" *-- "0..*" Alert : triggers
+Server "1" *-- "0..*" ConsoleSession : hosts
+
+Anomaly "1" *-- "0..*" Recommendation : produces
+Anomaly "1" --> "0..*" Notification : notifies via
+Anomaly "0..*" --> "0..1" User : resolved by
+Recommendation "0..*" --> "0..1" User : approved by
+Alert "0..*" --> "0..1" User : acknowledged by
+
+User "1" *-- "0..*" Notification : receives
+User "1" *-- "0..*" NotificationChannel : configures
+User "1" *-- "0..*" AuditLog : generates
+
+ConsoleSession "0..*" --> "1" User : initiated by
+ConsoleSession "0..*" --> "0..1" User : terminated by
+
+@enduml

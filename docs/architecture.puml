@@ -1,0 +1,77 @@
+@startuml ServerMonitorArchitecture
+' Архитектура системы Server Monitor — упрощённая схема
+' Палитра и шрифт согласованы со стилем презентации
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Calibri"
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam ArrowColor #3B5068
+skinparam ArrowFontColor #3B5068
+
+skinparam rectangle {
+  BorderColor #007A72
+  BackgroundColor #E8F4F3
+  FontColor #0D2137
+}
+skinparam package {
+  BorderColor #A8D8D4
+  BackgroundColor #F5F8FC
+  FontColor #0D2137
+}
+skinparam database {
+  BorderColor #007A72
+  BackgroundColor #E8F4F3
+  FontColor #0D2137
+}
+
+' ===================== Пользователи =====================
+package "Пользователи" {
+  [Web-интерфейс\nReact SPA] as UI
+  [Telegram] as TG
+  [Grafana] as GRAF
+}
+
+' ===================== Прокси =====================
+rectangle "Nginx\nreverse proxy + статика" as NGINX #007A72
+
+' ===================== Backend =====================
+package "Сервер приложения — FastAPI (async)" {
+  [REST API + WebSocket\nавторизация · JWT · RBAC] as API
+  [Сбор метрик\nпланировщик → SSH:\nCPU · RAM · диск · сеть · контейнеры] as COLLECT
+
+  package "Гибридный ML-конвейер" {
+    rectangle "LSTM-Autoencoder\nобнаружение" as DET #007A72
+    rectangle "CNN-LSTM\nклассификация" as CLF #007A72
+    rectangle "SHAP\nобъяснение" as EXP #007A72
+    rectangle "LLM\nрекомендация" as REC #007A72
+    DET -right-> CLF
+    CLF -right-> EXP
+    EXP -right-> REC
+  }
+}
+
+' ===================== Серверы и хранилища =====================
+[Целевые серверы] as SRV
+
+package "Хранение" {
+  database "PostgreSQL\nTimescaleDB" as PG
+  database "Redis" as REDIS
+  [Ollama LLM] as OLLAMA
+}
+
+' ===================== Связи =====================
+UI --> NGINX : HTTPS
+NGINX --> API
+API --> COLLECT
+COLLECT --> SRV : SSH
+COLLECT --> PG
+PG --> DET : окна метрик
+REC --> PG : аномалии + рекомендации
+REC ..> OLLAMA : запрос
+API --> PG
+API --> REDIS
+API --> TG : алерты
+GRAF ..> PG : запросы
+
+@enduml

@@ -1,0 +1,20 @@
+[
+  {
+    "server_id": 23,
+    "name": "anomaly-testbed-1",
+    "host": "141.98.84.84",
+    "port": 2222,
+    "username": "demo",
+    "password": "0rT1yzfxnA9kXbfMNima",
+    "role": "anomaly",
+    "inject_mode": "testbed",
+    "inject_anomalies": [
+      "cpu_spike",
+      "memory_leak",
+      "disk_fill",
+      "network_storm",
+      "container_crash",
+      "service_down"
+    ]
+  }
+]

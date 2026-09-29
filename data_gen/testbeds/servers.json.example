@@ -1,0 +1,65 @@
+[
+  {
+    "server_id": 1,
+    "name": "testbed-server-a",
+    "host": "172.28.0.10",
+    "port": 22,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-a"
+  },
+  {
+    "server_id": 2,
+    "name": "testbed-server-b",
+    "host": "172.28.0.11",
+    "port": 22,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-b"
+  },
+  {
+    "server_id": 3,
+    "name": "testbed-server-c",
+    "host": "172.28.0.12",
+    "port": 22,
+    "username": "root",
+    "password": "testbed123",
+    "container_name": "testbed-app-c"
+  },
+  {
+    "server_id": 4,
+    "name": "vm-normal-1",
+    "host": "192.168.10.101",
+    "port": 22,
+    "username": "ubuntu",
+    "password": "testbed123",
+    "container_name": "test-app"
+  },
+  {
+    "server_id": 5,
+    "name": "vm-normal-2",
+    "host": "192.168.10.102",
+    "port": 22,
+    "username": "ubuntu",
+    "password": "testbed123",
+    "container_name": "test-app"
+  },
+  {
+    "server_id": 6,
+    "name": "vm-anomaly-mem",
+    "host": "192.168.10.103",
+    "port": 22,
+    "username": "ubuntu",
+    "password": "testbed123",
+    "container_name": "test-app"
+  },
+  {
+    "server_id": 7,
+    "name": "vm-anomaly-net",
+    "host": "192.168.10.104",
+    "port": 22,
+    "username": "ubuntu",
+    "password": "testbed123",
+    "container_name": "test-app"
+  }
+]

@@ -1,161 +1,118 @@
 import asyncio
 import logging
+from io import StringIO
 from typing import Optional, Tuple
 
 import paramiko
 
 from app.core.config import settings
+from app.core.exceptions import SSHConnectionError
 from app.models.server import Server
 
 logger = logging.getLogger(__name__)
 
-
-class ConnectionError(Exception):
-    """Base exception for connection errors."""
-
-    def __init__(self, message: str, error_code: str):
-        self.message = message
-        self.error_code = error_code
-        super().__init__(self.message)
-
+ConnectionError = SSHConnectionError
 
 class SSHConnectionService:
-    """
-    Service for SSH connection testing and management.
-    Abstracted to allow easy replacement with other connection types.
-    """
 
     @staticmethod
     async def test_connection(server: Server) -> Tuple[bool, str, Optional[str]]:
-        """
-        Test SSH connection to server.
-        Returns: (success: bool, message: str, error_code: Optional[str])
-        """
+
         if server.connection_type != "ssh":
             return (
                 False,
                 f"Unsupported connection type: {server.connection_type}",
-                "UNSUPPORTED_TYPE",
+                "unsupported_type",
             )
 
-        try:
-            # Run SSH connection in thread pool to avoid blocking
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None,
-                SSHConnectionService._test_ssh_connection_sync,
-                server,
-            )
-            return result
-        except Exception as e:
-            logger.error(f"Unexpected error testing connection to {server.host}: {e}")
-            return False, f"Unexpected error: {str(e)}", "UNEXPECTED_ERROR"
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            SSHConnectionService._test_ssh_connection_sync,
+            server,
+        )
+
+    @staticmethod
+    def _build_connect_kwargs(server: Server) -> dict:
+        password = server.get_decrypted_password()
+        private_key_text = server.get_decrypted_private_key()
+
+        connect_kwargs: dict = {
+            "hostname": server.host,
+            "port": server.port,
+            "username": server.ssh_username,
+            "timeout": settings.SSH_TIMEOUT,
+            "look_for_keys": False,
+            "allow_agent": False,
+        }
+
+        if password:
+            connect_kwargs["password"] = password
+        elif private_key_text:
+            connect_kwargs["pkey"] = paramiko.RSAKey.from_private_key(StringIO(private_key_text))
+        else:
+            raise SSHConnectionError("No credentials provided", code="no_credentials")
+
+        return connect_kwargs
 
     @staticmethod
     def _test_ssh_connection_sync(server: Server) -> Tuple[bool, str, Optional[str]]:
-        """
-        Synchronous SSH connection test.
-        """
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            # Prepare connection parameters
-            connect_kwargs = {
-                "hostname": server.host,
-                "port": server.port,
-                "username": server.ssh_username,
-                "timeout": settings.SSH_TIMEOUT,
-            }
-
-            # Use password or private key
-            if server.ssh_password:
-                # TODO: Decrypt password from vault
-                connect_kwargs["password"] = server.ssh_password
-            elif server.ssh_private_key:
-                # TODO: Decrypt private key from vault
-                from io import StringIO
-
-                private_key = paramiko.RSAKey.from_private_key(StringIO(server.ssh_private_key))
-                connect_kwargs["pkey"] = private_key
-            else:
-                return False, "No credentials provided", "NO_CREDENTIALS"
-
-            # Attempt connection
+            connect_kwargs = SSHConnectionService._build_connect_kwargs(server)
             client.connect(**connect_kwargs)
 
-            # Test command execution
-            stdin, stdout, stderr = client.exec_command("echo 'test'")
+            _, stdout, _ = client.exec_command("echo 'test'")
             output = stdout.read().decode().strip()
-
             if output != "test":
-                return False, "Command execution test failed", "COMMAND_FAILED"
+                return False, "Command execution test failed", "command_failed"
 
-            client.close()
             return True, "Connection successful", None
 
+        except SSHConnectionError as exc:
+            return False, exc.message, exc.code
         except paramiko.AuthenticationException:
-            return False, "Authentication failed", "AUTH_FAILED"
-        except paramiko.SSHException as e:
-            return False, f"SSH error: {str(e)}", "SSH_ERROR"
+            return False, "Authentication failed", "auth_failed"
+        except paramiko.SSHException as exc:
+            return False, f"SSH error: {exc}", "ssh_error"
         except TimeoutError:
-            return False, "Connection timeout", "TIMEOUT"
-        except Exception as e:
-            return False, f"Connection error: {str(e)}", "CONNECTION_ERROR"
+            return False, "Connection timeout", "timeout"
+        except Exception as exc:
+            logger.exception("Unexpected SSH test failure for %s", server.host)
+            return False, f"Connection error: {exc}", "connection_error"
         finally:
             try:
                 client.close()
-            except:
+            except Exception:
                 pass
 
     @staticmethod
     async def get_ssh_client(server: Server) -> paramiko.SSHClient:
-        """
-        Get connected SSH client for server.
-        Raises ConnectionError if connection fails.
-        """
         loop = asyncio.get_event_loop()
-        client = await loop.run_in_executor(
+        return await loop.run_in_executor(
             None,
             SSHConnectionService._get_ssh_client_sync,
             server,
         )
-        return client
 
     @staticmethod
     def _get_ssh_client_sync(server: Server) -> paramiko.SSHClient:
-        """
-        Synchronous SSH client creation.
-        """
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            connect_kwargs = {
-                "hostname": server.host,
-                "port": server.port,
-                "username": server.ssh_username,
-                "timeout": settings.SSH_TIMEOUT,
-            }
-
-            if server.ssh_password:
-                connect_kwargs["password"] = server.ssh_password
-            elif server.ssh_private_key:
-                from io import StringIO
-
-                private_key = paramiko.RSAKey.from_private_key(StringIO(server.ssh_private_key))
-                connect_kwargs["pkey"] = private_key
-            else:
-                raise ConnectionError("No credentials provided", "NO_CREDENTIALS")
-
+            connect_kwargs = SSHConnectionService._build_connect_kwargs(server)
             client.connect(**connect_kwargs)
             return client
-
-        except paramiko.AuthenticationException:
-            raise ConnectionError("Authentication failed", "AUTH_FAILED")
-        except paramiko.SSHException as e:
-            raise ConnectionError(f"SSH error: {str(e)}", "SSH_ERROR")
-        except TimeoutError:
-            raise ConnectionError("Connection timeout", "TIMEOUT")
-        except Exception as e:
-            raise ConnectionError(f"Connection error: {str(e)}", "CONNECTION_ERROR")
+        except SSHConnectionError:
+            raise
+        except paramiko.AuthenticationException as exc:
+            raise SSHConnectionError("Authentication failed", code="auth_failed") from exc
+        except paramiko.SSHException as exc:
+            raise SSHConnectionError(f"SSH error: {exc}", code="ssh_error") from exc
+        except TimeoutError as exc:
+            raise SSHConnectionError("Connection timeout", code="timeout") from exc
+        except Exception as exc:
+            raise SSHConnectionError(f"Connection error: {exc}", code="connection_error") from exc

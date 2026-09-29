@@ -1,0 +1,99 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e7]:
+      - banner [ref=e8]:
+        - generic [ref=e9]:
+          - heading "Server Monitor" [level=6] [ref=e10]
+          - button "Уведомления" [ref=e11] [cursor=pointer]:
+            - generic [ref=e12]:
+              - img [ref=e13]
+              - generic [ref=e15]: "21"
+          - button "admin" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]: A
+      - navigation [ref=e18]:
+        - generic [ref=e20]:
+          - heading "Server Monitor" [level=6] [ref=e22]
+          - separator [ref=e23]
+          - list [ref=e24]:
+            - button "Дашборд" [ref=e25] [cursor=pointer]:
+              - img [ref=e27]
+              - generic [ref=e30]: Дашборд
+            - button "Серверы" [ref=e31] [cursor=pointer]:
+              - img [ref=e33]
+              - generic [ref=e36]: Серверы
+            - button "Аномалии" [ref=e37] [cursor=pointer]:
+              - img [ref=e39]
+              - generic [ref=e42]: Аномалии
+            - button "Уведомления" [ref=e43] [cursor=pointer]:
+              - img [ref=e45]
+              - generic [ref=e48]: Уведомления
+            - button "Пользователи" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+              - generic [ref=e54]: Пользователи
+            - button "Журнал аудита" [ref=e55] [cursor=pointer]:
+              - img [ref=e57]
+              - generic [ref=e60]: Журнал аудита
+            - button "Настройки LLM" [ref=e61] [cursor=pointer]:
+              - img [ref=e63]
+              - generic [ref=e66]: Настройки LLM
+            - button "Отчёты" [ref=e67] [cursor=pointer]:
+              - img [ref=e69]
+              - generic [ref=e72]: Отчёты
+      - main [ref=e73]:
+        - generic [ref=e309]:
+          - generic [ref=e310]:
+            - button "Назад к серверу" [ref=e311] [cursor=pointer]:
+              - img [ref=e312]
+            - img [ref=e314]
+            - paragraph [ref=e316]: test
+            - generic [ref=e318]: Подключено
+          - generic [ref=e322]:
+            - textbox "Terminal input" [ref=e323]
+            - generic:
+              - generic:
+                - generic: "* Management: https://landscape.canonical.com"
+              - generic:
+                - generic: "* Support: https://ubuntu.com/pro"
+              - generic:
+                - generic: System information as of Tue Jun 9 00:07:34 UTC 2026
+              - generic:
+                - generic: "System load: 0.33 Processes: 163"
+              - generic:
+                - generic: "Usage of /: 86.5% of 8.65GB Users logged in: 0"
+              - generic:
+                - generic: "Memory usage: 39% IPv4 address for ens3: 185.58.115.243"
+              - generic:
+                - generic: "Swap usage: 5%"
+              - generic:
+                - generic: => / is using 86.5% of 8.65GB
+              - generic:
+                - generic: "* Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s"
+              - generic:
+                - generic: just raised the bar for easy, resilient and secure K8s cluster deployment.
+              - generic:
+                - generic: https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+              - generic:
+                - generic: Expanded Security Maintenance for Applications is not enabled.
+              - generic:
+                - generic: 58 updates can be applied immediately.
+              - generic:
+                - generic: "To see these additional updates run: apt list --upgradable"
+              - generic:
+                - generic: 1 additional security update can be applied with ESM Apps.
+              - generic:
+                - generic: Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+              - generic:
+                - generic: "*** System restart required ***"
+              - generic:
+                - generic: "Last login: Tue Jun 9 00:07:45 2026 from 95.26.144.50"
+              - generic:
+                - generic: root@hiplet-35688:~#
+    - generic [ref=e209]:
+      - img [ref=e211]
+      - button "Open Tanstack query devtools" [ref=e259] [cursor=pointer]:
+        - img [ref=e260]
+    - alert [ref=e329]:
+      - generic [ref=e330]:
+        - img [ref=e331]
+        - text: Команда скопирована в буфер обмена
+  - generic [ref=e308]: memory used mb

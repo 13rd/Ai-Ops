@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-
 class ServerBase(BaseModel):
     name: str
     host: str
@@ -12,12 +11,10 @@ class ServerBase(BaseModel):
     environment: Optional[str] = None
     tags: List[str] = []
 
-
 class ServerCreate(ServerBase):
     ssh_username: Optional[str] = None
     ssh_password: Optional[str] = None
     ssh_private_key: Optional[str] = None
-
 
 class ServerUpdate(BaseModel):
     name: Optional[str] = None
@@ -30,7 +27,6 @@ class ServerUpdate(BaseModel):
     ssh_password: Optional[str] = None
     ssh_private_key: Optional[str] = None
 
-
 class ServerResponse(ServerBase):
     id: int
     status: str
@@ -41,10 +37,8 @@ class ServerResponse(ServerBase):
     class Config:
         from_attributes = True
 
-
 class ConnectionTestRequest(BaseModel):
     server_id: int
-
 
 class ConnectionTestResponse(BaseModel):
     success: bool

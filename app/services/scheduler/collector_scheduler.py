@@ -15,20 +15,14 @@ from app.services.servers.server_service import ServerService
 
 logger = logging.getLogger(__name__)
 
-
 class CollectorScheduler:
-    """
-    Scheduler for periodic metrics and container collection.
-    """
 
     def __init__(self):
         self.running = False
         self.task = None
 
     async def start(self):
-        """
-        Start the scheduler.
-        """
+
         if self.running:
             logger.warning("Scheduler is already running")
             return
@@ -38,9 +32,7 @@ class CollectorScheduler:
         logger.info("Collector scheduler started")
 
     async def stop(self):
-        """
-        Stop the scheduler.
-        """
+
         if not self.running:
             return
 
@@ -55,14 +47,11 @@ class CollectorScheduler:
         logger.info("Collector scheduler stopped")
 
     async def _run(self):
-        """
-        Main scheduler loop.
-        """
+
         while self.running:
             try:
                 await self._collect_all_servers()
 
-                # Run offline server alert checks
                 async with AsyncSessionLocal() as db:
                     try:
                         offline_alerts = await AlertEngine.check_offline_servers(db)
@@ -75,21 +64,20 @@ class CollectorScheduler:
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {e}")
 
-            # Wait for next collection interval
-            await asyncio.sleep(settings.METRICS_COLLECTION_INTERVAL)
+            await asyncio.sleep(settings.METRICS_INTERVAL_SEC)
 
     async def _collect_all_servers(self):
-        """
-        Collect metrics and containers from all servers.
-        """
+
         async with AsyncSessionLocal() as db:
             try:
-                # Get all servers
-                servers = await ServerService.get_servers(db, skip=0, limit=10000)
+                all_servers = await ServerService.get_servers(db, skip=0, limit=10000)
+                servers = [s for s in all_servers if s.ssh_username != "sim"]
 
-                logger.info(f"Starting collection for {len(servers)} servers")
+                logger.info(
+                    f"Starting collection for {len(servers)} servers "
+                    f"({len(all_servers) - len(servers)} synthetic skipped)"
+                )
 
-                # Collect from each server
                 for server in servers:
                     try:
                         await self._collect_server_data(db, server)
@@ -104,15 +92,12 @@ class CollectorScheduler:
                 logger.error(f"Error getting servers list: {e}")
 
     async def _collect_server_data(self, db: AsyncSession, server: Server):
-        """
-        Collect metrics and containers from a single server.
-        """
+
         logger.info(f"Collecting data from server {server.id} ({server.name})")
 
         metrics_success = False
         containers_success = False
 
-        # Collect metrics
         try:
             metrics = await MetricsCollector.collect_metrics(server)
             if metrics:
@@ -124,7 +109,6 @@ class CollectorScheduler:
         except Exception as e:
             logger.error(f"Error collecting metrics from {server.name}: {e}")
 
-        # Collect containers
         try:
             containers = await ContainerCollector.collect_containers(server)
             if containers is not None:
@@ -138,7 +122,6 @@ class CollectorScheduler:
         except Exception as e:
             logger.error(f"Error collecting containers from {server.name}: {e}")
 
-        # Update server status
         try:
             if metrics_success and containers_success:
                 status = ServerStatus.ONLINE
@@ -153,7 +136,6 @@ class CollectorScheduler:
         except Exception as e:
             logger.error(f"Error updating server status for {server.name}: {e}")
 
-        # Run alert evaluation for this server
         try:
             await AlertEngine.evaluate_server_metrics(db, server)
             await AlertEngine.evaluate_containers(db, server)
@@ -161,6 +143,4 @@ class CollectorScheduler:
         except Exception as e:
             logger.error(f"Error running alert evaluation for {server.name}: {e}")
 
-
-# Global scheduler instance
 scheduler = CollectorScheduler()

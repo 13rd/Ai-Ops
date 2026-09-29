@@ -1,11 +1,10 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
-
 
 class ConsoleSessionStatus(str, Enum):
     ACTIVE = "active"
@@ -13,18 +12,14 @@ class ConsoleSessionStatus(str, Enum):
     FAILED = "failed"
     TERMINATED = "terminated"
 
-
 class ConsoleSession(Base):
-    """
-    Model to represent a console session between a user and a server.
-    """
 
     __tablename__ = "console_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
     session_token = Column(
         String, unique=True, nullable=False, index=True
-    )  # Unique identifier for the session
+    )
     user_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -34,19 +29,16 @@ class ConsoleSession(Base):
     status = Column(String, default=ConsoleSessionStatus.ACTIVE, nullable=False, index=True)
     started_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     ended_at = Column(DateTime, nullable=True)
-    duration_seconds = Column(Integer, nullable=True)  # Session duration in seconds
+    duration_seconds = Column(Integer, nullable=True)
 
-    # Connection info
-    client_ip = Column(String, nullable=True)  # IP of the connecting client
+    client_ip = Column(String, nullable=True)
     terminated_by_user_id = Column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )  # Who terminated the session
-    termination_reason = Column(String, nullable=True)  # Reason for termination
+    )
+    termination_reason = Column(String, nullable=True)
 
-    # Additional metadata
-    session_metadata = Column(String, default="{}", nullable=False)  # JSON metadata as string
+    session_metadata = Column(String, default="{}", nullable=False)
 
-    # Relationships
     user = relationship("User", foreign_keys=[user_id])
     server = relationship("Server")
     terminated_by_user = relationship("User", foreign_keys=[terminated_by_user_id])

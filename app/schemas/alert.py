@@ -5,20 +5,19 @@ from pydantic import BaseModel
 
 from app.models.alert import AlertRuleType, AlertSeverity, AlertStatus
 
-
 class AlertResponse(BaseModel):
     id: int
     title: str
     description: Optional[str] = None
-    status: str  # AlertStatus as string
-    severity: str  # AlertSeverity as string
-    rule_type: str  # AlertRuleType as string
+    status: str
+    severity: str
+    rule_type: str
     server_id: Optional[int] = None
     container_id: Optional[str] = None
     metric_type: Optional[str] = None
     threshold_value: Optional[str] = None
     current_value: Optional[str] = None
-    metadata: dict = {}
+    additional_metadata: dict = {}
     acknowledged_at: Optional[datetime] = None
     acknowledged_by_user_id: Optional[int] = None
     resolved_at: Optional[datetime] = None
@@ -29,7 +28,6 @@ class AlertResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 class CreateAlertRequest(BaseModel):
     title: str
@@ -43,10 +41,8 @@ class CreateAlertRequest(BaseModel):
     current_value: Optional[str] = None
     metadata: Optional[dict] = None
 
-
 class AcknowledgeAlertRequest(BaseModel):
     user_id: int
-
 
 class AlertFilterRequest(BaseModel):
     status: Optional[AlertStatus] = None
@@ -54,7 +50,6 @@ class AlertFilterRequest(BaseModel):
     server_id: Optional[int] = None
     limit: int = 100
     offset: int = 0
-
 
 class AlertCountResponse(BaseModel):
     count: int

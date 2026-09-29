@@ -1,20 +1,24 @@
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any
 
-from pydantic import BaseModel
+from app.core.responses import ok
+from app.schemas.common import APIResponse, ErrorDetail, PaginatedData, PaginationMeta
 
-T = TypeVar("T")
-
-
-class APIResponse(BaseModel, Generic[T]):
-    success: bool
-    data: Optional[T] = None
-    message: Optional[str] = None
-    error: Optional[str] = None
-
+__all__ = [
+    "APIResponse",
+    "ErrorDetail",
+    "PaginatedData",
+    "PaginationMeta",
+    "success_response",
+    "error_response",
+]
 
 def success_response(data: Any = None, message: str = "Success") -> dict:
-    return {"success": True, "data": data, "message": message}
-
+    return ok(data=data, message=message)
 
 def error_response(error: str, message: str = "Error occurred") -> dict:
-    return {"success": False, "error": error, "message": message}
+    return APIResponse(
+        success=False,
+        data=None,
+        message=message,
+        error=ErrorDetail(code=error),
+    ).model_dump(mode="json")

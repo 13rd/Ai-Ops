@@ -1,0 +1,28 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - heading "Server Monitor" [level=5] [ref=e7]
+      - paragraph [ref=e8]: Sign in to continue
+    - alert [ref=e118]:
+      - img [ref=e120]
+      - generic [ref=e122]: Network error. Please try again.
+      - button "Close" [ref=e124] [cursor=pointer]:
+        - img [ref=e125]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: Username
+        - generic [ref=e12]:
+          - textbox "Username" [ref=e13]: wronguser
+          - group:
+            - generic: Username
+      - generic [ref=e14]:
+        - generic [ref=e117]: Password
+        - generic [ref=e15]:
+          - textbox "Password" [ref=e16]: wrongpassword123
+          - group:
+            - generic: Password
+      - button "Sign in" [ref=e17] [cursor=pointer]: Sign in
+  - generic [ref=e18]:
+    - img [ref=e20]
+    - button "Open Tanstack query devtools" [ref=e68] [cursor=pointer]:
+      - img [ref=e69]

@@ -1,0 +1,48 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - banner [ref=e107]:
+        - generic [ref=e108]:
+          - heading [level=6] [ref=e168]: Server Monitor
+          - button [ref=e169] [cursor=pointer]:
+            - img [ref=e112]
+          - button [ref=e170] [cursor=pointer]:
+            - generic [ref=e116]: A
+      - navigation [ref=e117]:
+        - generic [ref=e119]:
+          - heading [level=6] [ref=e171]: Server Monitor
+          - separator [ref=e122]
+          - list [ref=e123]:
+            - button [ref=e172] [cursor=pointer]:
+              - img [ref=e126]
+              - generic [ref=e129]: Dashboard
+            - button [ref=e173] [cursor=pointer]:
+              - img [ref=e132]
+              - generic [ref=e135]: Servers
+            - button [ref=e174] [cursor=pointer]:
+              - img [ref=e138]
+              - generic [ref=e141]: Anomalies
+            - button [ref=e175] [cursor=pointer]:
+              - img [ref=e144]
+              - generic [ref=e147]: Notifications
+            - button [ref=e176] [cursor=pointer]:
+              - img [ref=e150]
+              - generic [ref=e153]: Users
+            - button [ref=e177] [cursor=pointer]:
+              - img [ref=e156]
+              - generic [ref=e159]: Audit Log
+            - button [ref=e178] [cursor=pointer]:
+              - img [ref=e162]
+              - generic [ref=e165]: Reports
+      - main [ref=e166]:
+        - heading [level=5] [ref=e179]: Dashboard
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button [ref=e180] [cursor=pointer]:
+        - img [ref=e58]
+  - generic [active] [ref=e182]:
+    - generic [ref=e183]:
+      - heading "Notifications" [level=6] [ref=e203]
+      - button "View all" [ref=e186] [cursor=pointer]
+    - separator [ref=e187]
+    - paragraph [ref=e205]: No unread notifications

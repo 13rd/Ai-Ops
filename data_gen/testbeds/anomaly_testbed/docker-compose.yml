@@ -1,0 +1,58 @@
+# Anomaly testbed — deploy on a dedicated remote Docker host. Generates all 6
+# anomaly types as REAL load; your local machine collects metrics over SSH
+# (run_collector.py) and drives the anomalies over SSH (inject_anomalies.py).
+#
+#   target  — sshd + stress-ng + dd + docker CLI (mounted host socket).
+#             cpu_spike / memory_leak / disk_fill / network_storm run here.
+#   victims — 4 containers so containers_running_ratio has resolution like the
+#             training data. container_crash kills worker (ratio ~0.8);
+#             service_down stops web + db (ratio ~0.6).
+#
+# Setup: copy .env.example -> .env, set TESTBED_SSH_PASSWORD, then `docker compose up -d`.
+# Run this on a CLEAN docker host (the collector counts ALL containers on the host).
+name: anomaly-testbed
+
+services:
+  target:
+    build: ./target
+    container_name: testbed-target
+    hostname: testbed-target
+    environment:
+      SSH_PASSWORD: ${TESTBED_SSH_PASSWORD:?set TESTBED_SSH_PASSWORD in .env}
+    ports:
+      - "2222:22"
+    volumes:
+      # Lets the target enumerate + kill/stop victim containers on the host.
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    depends_on:
+      - victim-web
+      - victim-db
+      - victim-worker
+      - victim-cache
+
+  # nginx as the "service" — stopped during service_down.
+  victim-web:
+    image: nginx:alpine
+    container_name: testbed-victim-web
+    restart: "no"
+
+  victim-db:
+    image: alpine:latest
+    container_name: testbed-victim-db
+    command: ["sleep", "infinity"]
+    restart: "no"
+
+  # killed during container_crash.
+  victim-worker:
+    image: alpine:latest
+    container_name: testbed-victim-worker
+    command: ["sleep", "infinity"]
+    restart: "no"
+
+  # never injected — keeps a stable baseline container in the ratio.
+  victim-cache:
+    image: alpine:latest
+    container_name: testbed-victim-cache
+    command: ["sleep", "infinity"]
+    restart: unless-stopped

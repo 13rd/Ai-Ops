@@ -1,0 +1,127 @@
+- generic [ref=e2]:
+  - generic [ref=e106]:
+    - banner [ref=e107]:
+      - generic [ref=e108]:
+        - heading "Server Monitor" [level=6] [ref=e361]
+        - button "Notifications" [ref=e362] [cursor=pointer]:
+          - img [ref=e112]
+        - button "admin" [ref=e363] [cursor=pointer]:
+          - generic [ref=e115]: A
+    - navigation [ref=e116]:
+      - generic [ref=e118]:
+        - heading "Server Monitor" [level=6] [ref=e364]
+        - separator [ref=e121]
+        - list [ref=e122]:
+          - button "Dashboard" [ref=e365] [cursor=pointer]:
+            - img [ref=e125]
+            - generic [ref=e128]: Dashboard
+          - button "Servers" [ref=e366] [cursor=pointer]:
+            - img [ref=e131]
+            - generic [ref=e134]: Servers
+          - button "Anomalies" [ref=e367] [cursor=pointer]:
+            - img [ref=e137]
+            - generic [ref=e140]: Anomalies
+          - button "Notifications" [ref=e368] [cursor=pointer]:
+            - img [ref=e143]
+            - generic [ref=e146]: Notifications
+          - button "Users" [ref=e369] [cursor=pointer]:
+            - img [ref=e149]
+            - generic [ref=e152]: Users
+          - button "Audit Log" [ref=e370] [cursor=pointer]:
+            - img [ref=e155]
+            - generic [ref=e158]: Audit Log
+          - button "Reports" [ref=e371] [cursor=pointer]:
+            - img [ref=e161]
+            - generic [ref=e164]: Reports
+    - main [ref=e165]:
+      - generic [ref=e166]:
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - img [ref=e169]
+            - heading "Users" [level=5] [ref=e372]
+            - generic [ref=e173]: "4"
+          - button "New User" [active] [ref=e373] [cursor=pointer]:
+            - img [ref=e176]
+            - text: New User
+        - table [ref=e179]:
+          - rowgroup [ref=e180]:
+            - row "Username Email Role Status Created Actions" [ref=e374]:
+              - columnheader "Username" [ref=e375]
+              - columnheader "Email" [ref=e376]
+              - columnheader "Role" [ref=e377]
+              - columnheader "Status" [ref=e378]
+              - columnheader "Created" [ref=e379]
+              - columnheader "Actions" [ref=e380]
+          - rowgroup [ref=e188]:
+            - row "testoperator testoperator@example.com operator active 2026-05-17 18:47 Edit Deactivate" [ref=e381]:
+              - cell "testoperator" [ref=e382]:
+                - paragraph [ref=e383]: testoperator
+              - cell "testoperator@example.com" [ref=e384]:
+                - paragraph [ref=e385]: testoperator@example.com
+              - cell "operator" [ref=e386]:
+                - generic [ref=e388]: operator
+              - cell "active" [ref=e389]:
+                - generic [ref=e391]: active
+              - cell "2026-05-17 18:47" [ref=e392]: 4 hours ago
+              - cell "Edit Deactivate" [ref=e393]:
+                - generic [ref=e394]:
+                  - button "Edit" [ref=e395] [cursor=pointer]:
+                    - img [ref=e396]
+                  - button "Deactivate" [ref=e398] [cursor=pointer]:
+                    - img [ref=e399]
+            - row "smoke_phase0_user smoke_phase0_user@example.com admin active 2026-05-17 08:42 Edit Deactivate" [ref=e401]:
+              - cell "smoke_phase0_user" [ref=e402]:
+                - paragraph [ref=e191]: smoke_phase0_user
+              - cell "smoke_phase0_user@example.com" [ref=e403]:
+                - paragraph [ref=e193]: smoke_phase0_user@example.com
+              - cell "admin" [ref=e404]:
+                - generic [ref=e196]: admin
+              - cell "active" [ref=e405]:
+                - generic [ref=e199]: active
+              - cell "2026-05-17 08:42" [ref=e406]: 14 hours ago
+              - cell "Edit Deactivate" [ref=e407]:
+                - generic [ref=e202]:
+                  - button "Edit" [ref=e408] [cursor=pointer]:
+                    - img [ref=e204]
+                  - button "Deactivate" [ref=e409] [cursor=pointer]:
+                    - img [ref=e207]
+            - row "operator operator@example.com operator active 2026-04-12 20:32 Edit Deactivate" [ref=e410]:
+              - cell "operator" [ref=e411]:
+                - paragraph [ref=e211]: operator
+              - cell "operator@example.com" [ref=e412]:
+                - paragraph [ref=e213]: operator@example.com
+              - cell "operator" [ref=e413]:
+                - generic [ref=e216]: operator
+              - cell "active" [ref=e414]:
+                - generic [ref=e219]: active
+              - cell "2026-04-12 20:32" [ref=e415]: a month ago
+              - cell "Edit Deactivate" [ref=e416]:
+                - generic [ref=e222]:
+                  - button "Edit" [ref=e417] [cursor=pointer]:
+                    - img [ref=e224]
+                  - button "Deactivate" [ref=e418] [cursor=pointer]:
+                    - img [ref=e227]
+            - row "admin admin@example.com admin active 2026-04-12 20:32 Edit Deactivate" [ref=e419]:
+              - cell "admin" [ref=e420]:
+                - paragraph [ref=e231]: admin
+              - cell "admin@example.com" [ref=e421]:
+                - paragraph [ref=e233]: admin@example.com
+              - cell "admin" [ref=e422]:
+                - generic [ref=e236]: admin
+              - cell "active" [ref=e423]:
+                - generic [ref=e239]: active
+              - cell "2026-04-12 20:32" [ref=e424]: a month ago
+              - cell "Edit Deactivate" [ref=e425]:
+                - generic [ref=e242]:
+                  - button "Edit" [ref=e426] [cursor=pointer]:
+                    - img [ref=e244]
+                  - button "Deactivate" [ref=e427] [cursor=pointer]:
+                    - img [ref=e247]
+  - generic [ref=e7]:
+    - img [ref=e9]
+    - button "Open Tanstack query devtools" [ref=e428] [cursor=pointer]:
+      - img [ref=e58]
+  - alert [ref=e432]:
+    - generic [ref=e433]:
+      - img [ref=e434]
+      - text: User created

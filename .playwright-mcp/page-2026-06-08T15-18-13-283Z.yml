@@ -1,0 +1,161 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e106]:
+      - banner [ref=e107]:
+        - generic [ref=e108]:
+          - heading [level=6] [ref=e351]: Server Monitor
+          - button [ref=e352] [cursor=pointer]:
+            - generic [ref=e111]:
+              - img [ref=e112]
+              - generic [ref=e114]: "20"
+          - button [ref=e353] [cursor=pointer]:
+            - generic [ref=e116]: A
+      - navigation [ref=e117]:
+        - generic [ref=e119]:
+          - heading [level=6] [ref=e354]: Server Monitor
+          - separator [ref=e122]
+          - list [ref=e123]:
+            - button [ref=e355] [cursor=pointer]:
+              - img [ref=e126]
+              - generic [ref=e129]: Дашборд
+            - button [ref=e356] [cursor=pointer]:
+              - img [ref=e132]
+              - generic [ref=e135]: Серверы
+            - button [ref=e357] [cursor=pointer]:
+              - img [ref=e138]
+              - generic [ref=e141]: Аномалии
+            - button [ref=e358] [cursor=pointer]:
+              - img [ref=e144]
+              - generic [ref=e147]: Уведомления
+            - button [ref=e359] [cursor=pointer]:
+              - img [ref=e150]
+              - generic [ref=e153]: Пользователи
+            - button [ref=e360] [cursor=pointer]:
+              - img [ref=e156]
+              - generic [ref=e159]: Журнал аудита
+            - button [ref=e361] [cursor=pointer]:
+              - img [ref=e162]
+              - generic [ref=e165]: Отчёты
+      - main [ref=e166]:
+        - generic [ref=e167]:
+          - button [ref=e362] [cursor=pointer]:
+            - img [ref=e170]
+            - text: Аномалии
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - generic [ref=e174]:
+                - generic [ref=e176]: Критическая
+                - generic [ref=e178]: Открыта
+                - heading [level=6] [ref=e363]: Cpu Spike
+              - generic [ref=e180]:
+                - button [ref=e364] [cursor=pointer]:
+                  - text: fr test 2
+                  - img [ref=e183]
+                - paragraph [ref=e185]: ·
+                - paragraph [ref=e186]: Обнаружена 2 days ago
+            - generic [ref=e187]:
+              - generic [ref=e188]: Статус
+              - generic [ref=e189]:
+                - combobox [ref=e190] [cursor=pointer]: Открыта
+                - textbox: open
+                - img
+                - group:
+                  - generic: Статус
+          - generic [ref=e191]:
+            - heading [level=6] [ref=e365]: Оценки обнаружения
+            - generic [ref=e193]: ML-модель восстанавливает нормальные паттерны метрик. Высокая ошибка реконструкции означает, что текущее состояние значительно отличается от изученной нормы.
+            - generic [ref=e194]:
+              - generic [ref=e366]:
+                - text: Ошибка реконструкции
+                - paragraph [ref=e196]: "12.443"
+              - generic [ref=e367]:
+                - text: Нормальный порог
+                - paragraph [ref=e198]: "11.678"
+              - generic [ref=e368]:
+                - text: Превышение порога
+                - paragraph [ref=e200]: ×1.1
+          - generic [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - heading [level=6] [ref=e369]: Метрики на момент обнаружения
+                - text: Состояние сервера на момент обнаружения аномалии
+              - generic [ref=e205]: Собрано 2026-06-06 21:58
+            - generic [ref=e206]:
+              - generic [ref=e208]:
+                - text: Cpu Usage Percent
+                - paragraph [ref=e209]: "100.00"
+              - generic [ref=e211]:
+                - text: Memory Usage Percent
+                - paragraph [ref=e212]: "55.05"
+              - generic [ref=e214]:
+                - text: Disk Usage Percent
+                - paragraph [ref=e215]: "43.00"
+              - generic [ref=e370]:
+                - text: Нагрузка (1 мин)
+                - paragraph [ref=e218]: "0.08"
+              - generic [ref=e371]:
+                - text: Нагрузка (5 мин)
+                - paragraph [ref=e221]: "0.06"
+              - generic [ref=e372]:
+                - text: Нагрузка (15 мин)
+                - paragraph [ref=e224]: "0.26"
+              - generic [ref=e373]:
+                - text: Входящий трафик
+                - paragraph [ref=e227]: 130.2 MB
+              - generic [ref=e374]:
+                - text: Исходящий трафик
+                - paragraph [ref=e230]: 77.3 MB
+              - generic [ref=e375]:
+                - text: Процессы
+                - paragraph [ref=e233]: "8"
+              - generic [ref=e376]:
+                - text: Активные подключения
+                - paragraph [ref=e236]: "2"
+          - generic [ref=e237]:
+            - heading [level=6] [ref=e377]: Важность признаков (SHAP)
+            - generic [ref=e239]: Показывает, какие метрики больше всего способствовали обнаружению этой аномалии. Красные полосы увеличивают оценку (в сторону аномалии), зелёные — уменьшают (в сторону нормы). Чем длиннее полоса, тем сильнее влияние.
+            - application [ref=e242]:
+              - generic [ref=e272]:
+                - generic [ref=e273]:
+                  - generic [ref=e275]: "0.00"
+                  - generic [ref=e395]: "0.25"
+                  - generic [ref=e397]: "0.50"
+                  - generic [ref=e399]: "0.75"
+                  - generic [ref=e401]: "1.00"
+                - generic [ref=e284]: SHAP-значение (влияние на оценку аномалии)
+                - generic [ref=e285]:
+                  - generic [ref=e287]: cpu percent
+                  - generic [ref=e289]: disk percent
+                  - generic [ref=e291]: swap used mb
+                  - generic [ref=e293]: containersrunning ratio
+                  - generic [ref=e295]: load avg 1m
+                  - generic [ref=e297]: mem percent
+                  - generic [ref=e299]: net in bps
+                  - generic [ref=e301]: net out bps
+                  - generic [ref=e303]: disk write bps
+                  - generic [ref=e305]: disk read bps
+          - generic [ref=e306]:
+            - heading [level=6] [ref=e402]: Рекомендации
+            - generic [ref=e308]: Шаги по устранению, сгенерированные ИИ на основе обнаруженного паттерна аномалии
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - generic [ref=e313]: pending
+                - generic [ref=e314]: 2026-06-06 21:58
+              - paragraph [ref=e315]: "Нагрузка на CPU устойчиво превышает порог. Прежде чем предпринимать какие-либо действия, изучите процессы — основные потребители CPU: обычная причина — сбойный процесс или зациклившийся поток."
+              - generic [ref=e316]: ps -eo pid,pcpu,pmem,comm --sort=-pcpu | head -n 10
+              - generic [ref=e317]:
+                - button [ref=e403] [cursor=pointer]:
+                  - img [ref=e320]
+                  - text: Одобрить
+                - button [ref=e404] [cursor=pointer]:
+                  - img [ref=e324]
+                  - text: Отклонить
+    - generic [ref=e7]:
+      - img [ref=e9]
+      - button [ref=e405] [cursor=pointer]:
+        - img [ref=e58]
+  - generic [ref=e326]: write
+  - menu [ref=e408]:
+    - menuitem "Профиль" [active] [ref=e409] [cursor=pointer]: Профиль
+    - separator [ref=e410]
+    - menuitem "Выйти" [ref=e411] [cursor=pointer]
